@@ -222,6 +222,25 @@ for (const name of SCENARIOS) {
   });
 }
 
+test('full-product: docker infra + entity-model + ui-design present', () => {
+  const tmp = '/tmp/init-code-repo-test-fp-extras';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/full-product/config.json', 'utf8')));
+  const tree = fileTree(tmp);
+  // docker infra
+  assertOk(tree.includes('infra/docker/Dockerfile'), 'Dockerfile present');
+  assertOk(tree.includes('infra/docker/docker-compose.yml'), 'compose present');
+  assertOk(tree.includes('infra/docker/.env.example'), '.env.example present');
+  // entity-model + ui-design (product-docs)
+  assertOk(tree.includes('docs/02-design/entity-model.md'), 'entity-model present');
+  assertOk(tree.includes('docs/02-design/ui-design/README.md'), 'ui-design README present');
+  // docker Dockerfile has rust hint (full-product stacks rust+node), no node hint leak... actually node IS selected so node hint present too
+  const df = readFileSync(`${tmp}/infra/docker/Dockerfile`, 'utf8');
+  assertOk(df.includes('Rust 示例'), 'Dockerfile rust hint');
+  assertOk(df.includes('Node 示例'), 'Dockerfile node hint');
+  assertClean(df, 'full-product Dockerfile');
+});
+
 test('multi-stack: glue files + pre-receive present', () => {
   const tmp = '/tmp/init-code-repo-test-multi-stack';
   rmSync(tmp, { recursive: true, force: true });

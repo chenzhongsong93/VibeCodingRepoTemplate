@@ -138,7 +138,7 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 | 组件 | cond | 新增 | 副作用 |
 |------|------|------|--------|
 | 产品级设计文档组 | product-docs | 00-charter/、01-product/、02-design/system-architecture.md | AGENTS 加六层模型段 |
-| Docker 构建基础设施 | docker | （infra 模板，后续） | dev-workflow L2 激活 |
+| Docker 构建基础设施 | docker | infra/docker/（Dockerfile + docker-compose.yml + .env.example） | dev-workflow L2 激活 |
 | 三层测试规则 | three-tier-test | rules/testing-rules.md | test-spec 升级完整 + dev-workflow L3 激活 |
 | Clean Code 严格门禁 | clean-code | rules/clean-code-rules.md | 栈 lint 强制 -D warnings |
 | Agent 行为军规 | agent-conduct | rules/agent-conduct-rules.md | AGENTS 索引加军规行 |
