@@ -1,0 +1,18 @@
+# 研发流程规则
+
+> 每轮迭代按以下步骤执行。违反 = 构建阻断。
+
+## 步骤
+
+1. **读交接 + 仓结构核心文件**：[HANDOVER.md](../HANDOVER.md)、本 AGENTS.md、[ROADMAP.md](../ROADMAP.md)（确认当前阶段门 + 走偏自检）。
+2. **头脑风暴 + 需求分析设计**：用 `superpowers:brainstorming` 探索需求，产出 spec/plan 落 `docs/superpowers/specs/`。设本轮收口验收标准（可量化）。
+3. **整合测试设计**：建/更新 [test-spec](../02-design/test-spec/) SSOT。
+4. **TDD 驱动开发**：按 SSOT 写测试→红→实现→绿→代码检视。
+<!--IF:full-workflow-->
+5. **L2 集成测试**<!--IF:docker-->：Docker 镜像构建后跑契约测试<!--/IF:docker--><!--IF:three-tier-test-->：跨模块集成回归<!--/IF:three-tier-test-->。
+6. **L3 端到端测试**：e2e 验证。
+<!--/IF:full-workflow-->
+5. **记录**：刷新 [ledger/](../ledger/) 台账与交接。
+6. **发布门控**：lint 全绿、测试全绿、SSOT 一致性检查。
+
+注：未选 Docker/三层测试时，L2/L3 步骤跳过（步骤编号顺延）。

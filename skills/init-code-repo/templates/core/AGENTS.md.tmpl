@@ -1,0 +1,48 @@
+# AGENTS.md — {{PROJECT_NAME}}
+
+> 本文件是本仓 SSOT 入口。所有 agent（人/AI）动手前必读。
+> 多端兼容：Claude CLI 经 `CLAUDE.md` 转引至此；codex/opencode/kimicode/zcode 直读本文件。
+
+## 项目一句话
+
+{{ONE_LINE}}
+
+## 强制规则索引（违反 = 构建阻断）
+
+| 规则 | 文档 |
+|------|------|
+| 研发流程 | [docs/rules/dev-workflow-rules.md](docs/rules/dev-workflow-rules.md) |
+| 提交规范 | [docs/rules/commit-rules.md](docs/rules/commit-rules.md) |
+| SSOT/文档治理 | [docs/rules/doc-ssot-rules.md](docs/rules/doc-ssot-rules.md) |
+<!--IF:agent-conduct-->
+| Agent 行为军规 | [docs/rules/agent-conduct-rules.md](docs/rules/agent-conduct-rules.md) |
+<!--/IF:agent-conduct-->
+<!--IF:clean-code-->
+| Clean Code 规则 | [docs/rules/clean-code-rules.md](docs/rules/clean-code-rules.md) |
+<!--/IF:clean-code-->
+<!--IF:three-tier-test-->
+| 测试规则 | [docs/rules/testing-rules.md](docs/rules/testing-rules.md) |
+<!--/IF:three-tier-test-->
+
+## 代码仓结构
+
+```
+{{PROJECT_NAME}}/
+├── docs/
+│   ├── 02-design/test-spec/   # 测试设计 SSOT
+│   ├── ROADMAP.md              # 前瞻路线图（与 HANDOVER 配对）
+│   ├── HANDOVER.md             # 进展+交接（与 ROADMAP 配对）
+│   ├── ledger/                 # 累积型台账（bugs<!--IF:full-ledger-->/debt/version-log<!--/IF:full-ledger-->）
+│   ├── rules/                  # 强制规则
+│   └── superpowers/specs/      # 过程稿（非 SSOT）
+├── AGENTS.md                   # 本文件
+└── CLAUDE.md                   # 委托指针
+```
+
+## 文档三类
+
+详见 [docs/rules/doc-ssot-rules.md](docs/rules/doc-ssot-rules.md)：正式 SSOT / 累积型台账 / 过程文档。
+
+## 回应语言
+
+所有回应、设计文档、规划文档一律使用中文。

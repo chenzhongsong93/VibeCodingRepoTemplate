@@ -1,0 +1,30 @@
+# SSOT 与文档治理规则
+
+## 文档三类
+
+| 类别 | 性质 | 生命周期 | 例子 |
+|------|------|----------|------|
+| 正式 SSOT | 治理型真相源，变更走治理 | 被回刷维护 | `00-charter/`、`02-design/`、`rules/` |
+| 累积型台账 | 只增不删，归档=移至 `archive/` | 只增 | `HANDOVER.md`、`ledger/bugs|debt|version-log` |
+| 过程文档 | 非 SSOT，追溯用 | 可作废 | `superpowers/specs/` |
+
+冲突时以正式 SSOT 为准。累积 ≠ 过程文档：台账累积且是 SSOT。
+
+## 台账刷新责任
+
+| 台账 | 时机 | 谁刷新 |
+|------|------|--------|
+| HANDOVER.md | 每轮第 7 步 | agent |
+| bugs.md | 发现+闭环时 | agent |
+<!--IF:full-ledger-->
+| debt.md | 引入规避+偿还时 | agent |
+| version-log.md | 每次发布 | devops |
+<!--/IF:full-ledger-->
+
+## 归档转存
+
+主文件超阈值（如 50 条闭环）或发布时，闭环/已偿还/已过阶段条目移至 `ledger/archive/<名>-<版本>.md`。主文件保留近 N 条 + 全部未闭环。归档需用户确认，不自动执行。
+
+## CLAUDE.md 不可变
+
+`CLAUDE.md` 是委托指针，禁止改写（见 AGENTS.md 铁律）。

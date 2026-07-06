@@ -1,0 +1,56 @@
+# lefthook.yml — 机器关卡
+# 安装：cargo install lefthook && lefthook install
+# --no-verify 视为违规
+
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      run: gitleaks protect --staged --redact --verbose
+<!--IF:rust-->
+    rust-fmt:
+      glob: "*.rs"
+      run: cargo fmt --check
+    rust-clippy:
+      glob: "*.rs"
+      run: cargo clippy -- -D warnings
+<!--/IF:rust-->
+<!--IF:node-->
+    web-lint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: npx eslint {staged_files}
+    web-fmt:
+      glob: "*.{ts,tsx,js,jsx,json,css,md}"
+      run: npx prettier --check {staged_files}
+<!--/IF:node-->
+
+commit-msg:
+  commands:
+<!--IF:commit-default-->
+    conventional-commit:
+      run: |
+        msg=$(cat {1})
+        echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#\d+$' \
+          || { echo "❌ 提交信息不符: type(scope): subject #issue"; exit 1; }
+<!--/IF:commit-default-->
+<!--IF:commit-custom-->
+    conventional-commit:
+      run: |
+        msg=$(cat {1})
+        echo "$msg" | grep -qE '{{COMMIT_REGEX}}' \
+          || { echo "❌ 提交信息不符规范"; exit 1; }
+<!--/IF:commit-custom-->
+<!--IF:commit-none-->
+    # commit-msg 校验已关闭（用户选择"不要求"）
+<!--/IF:commit-none-->
+
+pre-push:
+  commands:
+<!--IF:doc-sync-->
+    doc-sync-check:
+      run: |
+        if git diff --name-only HEAD@{1} HEAD | grep -qE '\.(rs|ts|tsx|js|jsx|py|go)$'; then
+          echo "⚠️ 代码变更：确认是否需同步设计文档。见 AGENTS.md。"
+        fi
+        exit 0
+<!--/IF:doc-sync-->
