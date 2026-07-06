@@ -1,0 +1,24 @@
+# Clean Code 规则
+
+> 代码质量门控标准。配合栈 lint（clippy/eslint/ruff/golangci-lint）执行，`-D warnings` 强制。
+
+## L1 通用审查
+
+- **单一职责**：一个函数/模块只做一件事。
+- **命名达意**：名字说"做什么"而非"怎么做"。
+- **无魔法数**：常量具名。
+- **函数短小**：建议 ≤ 40 行；超 80 行必有充分理由。
+- **复杂度**：圈复杂度建议 ≤ 10。
+- **依赖倒置**：依赖抽象不依赖实现。
+- **无硬编码**：URL/key/路径不硬编码，走配置。
+- **错误处理**：不吞异常，不空 catch，不静默失败。
+
+## L2/L3 栈专项
+
+- Rust：clippy `-D warnings` + `cargo fmt --check`。
+- Node：eslint + prettier。
+- Python：ruff + mypy。
+- Go：gofmt + go vet。
+
+## 基线豁免
+旧代码基线豁免须在 `ledger/debt.md` 登记，新代码不豁免。

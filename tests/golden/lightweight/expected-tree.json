@@ -8,9 +8,14 @@
   "docs/ROADMAP.md",
   "docs/ledger/archive/.gitkeep",
   "docs/ledger/bugs.md",
+  "docs/ledger/debt.md",
+  "docs/ledger/version-log.md",
+  "docs/rules/agent-conduct-rules.md",
+  "docs/rules/clean-code-rules.md",
   "docs/rules/commit-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
+  "docs/rules/testing-rules.md",
   "docs/superpowers/specs/.gitkeep",
   "lefthook.yml"
 ]
