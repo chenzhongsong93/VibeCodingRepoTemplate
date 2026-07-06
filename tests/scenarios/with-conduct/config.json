@@ -1,0 +1,11 @@
+{
+  "projectName": "WithConduct",
+  "oneLine": "带军规的项目",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-conduct"]
+}

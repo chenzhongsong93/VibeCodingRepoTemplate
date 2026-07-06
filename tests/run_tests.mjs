@@ -109,3 +109,17 @@ test('commit-gate none mode', () => {
   assertOk(!lh.includes('conventional-commit'), 'no commit-msg gate in none mode');
   assertOk(!cr.includes('feat|fix|docs'), 'no default regex in none mode');
 });
+
+const COND_TMP = '/tmp/init-code-repo-test-with-conduct';
+
+test('with-conduct: AGENTS includes conduct row', () => {
+  rmSync(COND_TMP, { recursive: true, force: true });
+  assemble(COND_TMP, JSON.parse(readFileSync('tests/scenarios/with-conduct/config.json', 'utf8')));
+  const agents = readFileSync(`${COND_TMP}/AGENTS.md`, 'utf8');
+  assertOk(agents.includes('agent-conduct-rules.md'), 'AGENTS has conduct row');
+  // other optional rows still absent
+  assertOk(!agents.includes('clean-code-rules.md'), 'no clean-code row');
+  assertOk(!agents.includes('testing-rules.md'), 'no testing row');
+  // cleanliness
+  assertClean(agents, 'with-conduct AGENTS');
+});
