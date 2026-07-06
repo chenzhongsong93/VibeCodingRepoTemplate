@@ -57,6 +57,9 @@ export function assemble(targetDir, config) {
   const activeSet = new Set(conds);
   const root = 'skills/init-code-repo/templates';
   writeTree(join(root, 'core'), targetDir, ctx, activeSet);
+  if (config.repoRole === 'central-docs') {
+    writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet);
+  }
   for (const stack of config.stacks || []) {
     writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet);
   }
