@@ -169,3 +169,24 @@ test('full-workflow: L2/L3 steps + rust + doc-sync active', () => {
   const agents = readFileSync(`${FW_TMP}/AGENTS.md`, 'utf8');
   assertClean(agents, 'full-workflow AGENTS');
 });
+
+test('require-marker: optional files included only when component active', () => {
+  const tmp = '/tmp/init-code-repo-test-require';
+  rmSync(tmp, { recursive: true, force: true });
+
+  // lightweight: agent-conduct inactive → file absent
+  assemble(tmp, loadConfig('lightweight'));
+  const treeLight = fileTree(tmp);
+  assertOk(!treeLight.includes('docs/rules/agent-conduct-rules.md'), 'agent-conduct absent in lightweight');
+  assertOk(!treeLight.includes('docs/ledger/debt.md'), 'debt absent in lightweight');
+
+  // with-conduct: agent-conduct active → file present, marker stripped
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/with-conduct/config.json', 'utf8')));
+  const treeCond = fileTree(tmp);
+  assertOk(treeCond.includes('docs/rules/agent-conduct-rules.md'), 'agent-conduct present with-conduct');
+  const ac = readFileSync(`${tmp}/docs/rules/agent-conduct-rules.md`, 'utf8');
+  assertOk(!ac.startsWith('<!--require:'), 'require marker stripped from output');
+  assertOk(ac.startsWith('# Agent 行为军规'), 'file starts with title after marker strip');
+  assertClean(ac, 'with-conduct agent-conduct-rules');
+});
