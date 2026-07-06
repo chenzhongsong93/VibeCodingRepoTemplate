@@ -21,6 +21,7 @@ function extraConds(config) {
   else if (mode === 'custom') conds.push('commit-custom');
   else if (mode === 'none') conds.push('commit-none');
   for (const s of config.stacks || []) conds.push(s);
+  for (const r of config.runtimes || []) conds.push(r);
   return conds;
 }
 
@@ -58,4 +59,7 @@ export function assemble(targetDir, config) {
     writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet);
   }
   writeTree(join(root, 'gates'), targetDir, ctx, activeSet);
+  for (const runtime of config.runtimes || []) {
+    writeTree(join(root, 'runtime-adapters', runtime), targetDir, ctx, activeSet);
+  }
 }
