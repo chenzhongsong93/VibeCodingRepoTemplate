@@ -71,3 +71,41 @@ test('lightweight: content + cleanliness', () => {
     if (!f.endsWith('.gitkeep')) assertClean(read(f), f);
   }
 });
+
+const MODE_TMP = '/tmp/init-code-repo-test-commit-modes';
+
+function assembleFresh(tmp, configOverrides) {
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { ...loadConfig('lightweight'), ...configOverrides });
+}
+
+test('commit-gate default mode', () => {
+  assembleFresh(MODE_TMP, { commitGate: { mode: 'default' } });
+  const lh = readFileSync(`${MODE_TMP}/lefthook.yml`, 'utf8');
+  const cr = readFileSync(`${MODE_TMP}/docs/rules/commit-rules.md`, 'utf8');
+  assertOk(lh.includes('feat|fix|docs'), 'lefthook has default regex');
+  assertOk(cr.includes('feat|fix|docs'), 'commit-rules has default regex');
+  assertOk(!lh.includes('{{COMMIT_REGEX}}'), 'no leftover COMMIT_REGEX in lefthook');
+  assertOk(!cr.includes('建议（非强制）'), 'default is enforced not suggested');
+});
+
+test('commit-gate custom mode', () => {
+  assembleFresh(MODE_TMP, {
+    commitGate: { mode: 'custom', regex: '^.+:\\s.+$' },
+  });
+  const lh = readFileSync(`${MODE_TMP}/lefthook.yml`, 'utf8');
+  const cr = readFileSync(`${MODE_TMP}/docs/rules/commit-rules.md`, 'utf8');
+  assertOk(lh.includes('^.+:\\s.+$'), 'lefthook has custom regex');
+  assertOk(cr.includes('^.+:\\s.+$'), 'commit-rules has custom regex');
+  assertOk(!lh.includes('feat|fix|docs'), 'no default regex in custom mode');
+  assertOk(!cr.includes('建议（非强制）'), 'custom is enforced not suggested');
+});
+
+test('commit-gate none mode', () => {
+  assembleFresh(MODE_TMP, { commitGate: { mode: 'none' } });
+  const lh = readFileSync(`${MODE_TMP}/lefthook.yml`, 'utf8');
+  const cr = readFileSync(`${MODE_TMP}/docs/rules/commit-rules.md`, 'utf8');
+  assertOk(cr.includes('建议（非强制）'), 'none mode is suggestion only');
+  assertOk(!lh.includes('conventional-commit'), 'no commit-msg gate in none mode');
+  assertOk(!cr.includes('feat|fix|docs'), 'no default regex in none mode');
+});
