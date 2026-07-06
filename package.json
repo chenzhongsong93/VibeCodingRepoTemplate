@@ -1,0 +1,8 @@
+{
+  "name": "vibe-coding-repo-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/run_tests.mjs"
+  }
+}
