@@ -26,6 +26,7 @@
   "docs/rules/agent-conduct-rules.md",
   "docs/rules/clean-code-rules.md",
   "docs/rules/commit-rules.md",
+  "docs/rules/design-completeness-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
   "docs/rules/testing-rules.md",
@@ -35,5 +36,6 @@
   "infra/docker/docker-compose.yml",
   "lefthook.yml",
   "package.json",
-  "pre-receive-remote/pre-receive"
+  "pre-receive-remote/pre-receive",
+  "scripts/check-completeness.mjs"
 ]

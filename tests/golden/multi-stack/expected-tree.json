@@ -13,10 +13,12 @@
   "docs/ledger/debt.md",
   "docs/ledger/version-log.md",
   "docs/rules/commit-rules.md",
+  "docs/rules/design-completeness-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
   "docs/superpowers/specs/.gitkeep",
   "lefthook.yml",
   "package.json",
-  "pre-receive-remote/pre-receive"
+  "pre-receive-remote/pre-receive",
+  "scripts/check-completeness.mjs"
 ]
