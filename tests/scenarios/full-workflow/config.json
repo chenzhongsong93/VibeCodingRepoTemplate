@@ -1,0 +1,11 @@
+{
+  "projectName": "FullFlow",
+  "oneLine": "带 docker 与三层测试的项目",
+  "year": "2026",
+  "stacks": ["rust"],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["docker", "doc-sync"]
+}
