@@ -100,7 +100,9 @@ agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目
 
 激活集 = 选中组件 + 派生态 + commit 档 + 选中栈。
 
-**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`。
+**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`。
+
+> 注：`multi-repo-component`/`central-docs` 由 repoRole 派生（非 components 列表），但作为 cond 名会经 activeConds 透传，故一并列出。
 
 **派生态**：
 - `full-workflow` = components 含 `docker` 或 `three-tier-test`。

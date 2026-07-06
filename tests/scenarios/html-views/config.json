@@ -1,0 +1,11 @@
+{
+  "projectName": "HtmlViews",
+  "oneLine": "带 HTML 视图的项目",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["docs-site", "design-views", "product-docs"]
+}

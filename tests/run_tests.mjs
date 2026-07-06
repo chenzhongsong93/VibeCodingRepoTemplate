@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import { rmSync, readFileSync, readdirSync } from 'node:fs';
+import { rmSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileTree } from './lib/tree.mjs';
 import { deadLinks } from './lib/links.mjs';
 import { assertTreeEqual, assertClean, assertContains } from './lib/diff.mjs';
@@ -339,3 +339,33 @@ for (const name of ['component', 'central-docs']) {
     assertClean(a, `${name} AGENTS`);
   });
 }
+
+test('html-views: tree + content', () => {
+  const tmp = '/tmp/init-code-repo-test-html-views';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/html-views/config.json', 'utf8')));
+  const tree = fileTree(tmp);
+  const expected = JSON.parse(readFileSync('tests/golden/html-views/expected-tree.json', 'utf8'));
+  assertTreeEqual(tree, expected, 'html-views tree');
+  assertOk(tree.includes('docs/.vitepress/config.ts'), 'vitepress config present');
+  assertOk(tree.includes('docs/02-design/views/README.md'), 'views README present');
+  const c = readFileSync(`${tmp}/docs/.vitepress/config.ts`, 'utf8');
+  assertOk(c.includes("title: 'HtmlViews'"), 'vitepress title substituted');
+  assertClean(c, 'vitepress config');
+  const dg = readFileSync(`${tmp}/docs/02-design/doc-governance.md`, 'utf8');
+  assertOk(dg.includes('HTML 视图（非 SSOT）'), 'governance has HTML section');
+  assertClean(dg, 'governance');
+});
+
+test('deadLinks: scans .html <a href>', () => {
+  const tmp = '/tmp/init-code-repo-test-html-deadlink';
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(`${tmp}/docs`, { recursive: true });
+  writeFileSync(`${tmp}/docs/page.html`,
+    '<a href="good.html">good</a> <a href="missing.html">missing</a> <a href="https://ext.com">ext</a> <a href="#anchor">anchor</a>');
+  writeFileSync(`${tmp}/docs/good.html`, '<p>exists</p>');
+  const dead = deadLinks(tmp);
+  assertOk(dead.some(d => d.target === 'missing.html'), 'missing.html flagged');
+  assertOk(!dead.some(d => d.target === 'good.html'), 'good.html not flagged');
+  assertOk(!dead.some(d => d.link.startsWith('https://') || d.link.startsWith('#')), 'ext/anchor ignored');
+});
