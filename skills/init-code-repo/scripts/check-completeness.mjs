@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+// check-completeness.mjs — 设计完整性门控维护者预言机。
+// 用法：node scripts/check-completeness.mjs --stage P1 [--root <repo-root>]
+// 扫描当前阶段门必填文档的 TODO 残留/空节，有残留=exit 1。
+// 与 SKILL.md 阶段 5 agent 路径同逻辑。
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const ROOT = process.argv.includes('--root') ? process.argv[process.argv.indexOf('--root') + 1] : '.';
+const stageIdx = process.argv.indexOf('--stage');
+const stage = stageIdx >= 0 ? process.argv[stageIdx + 1] : readStageFromHandover(ROOT);
+
+const MAPPING = {
+  P0: ['docs/00-charter/concept.md', 'docs/00-charter/guardrails.md', 'docs/00-charter/vision-strategy.md', 'docs/02-design/north-star.md', 'ROADMAP.md'],
+  P1: ['docs/02-design/system-architecture.md', 'docs/02-design/entity-model.md', 'docs/02-design/api/api-reference.md'],
+  P2: ['docs/02-design/ui-design/README.md', 'docs/02-design/test-spec/README.md'],
+  P3: ['docs/ledger/debt.md'],
+};
+
+function readStageFromHandover(root) {
+  const p = join(root, 'docs/HANDOVER.md');
+  if (!existsSync(p)) return 'P0';
+  const t = readFileSync(p, 'utf8');
+  const m = t.match(/当前阶段门[\s\S]{0,40}(P[0-3])/);
+  return m ? m[1] : 'P0';
+}
+
+function scanFile(rel) {
+  const p = join(ROOT, rel);
+  if (!existsSync(p)) return [{ file: rel, issue: 'missing' }];
+  const text = readFileSync(p, 'utf8');
+  const issues = [];
+  const todoRe = /（TODO[:/f|i\sl]*[^）]*）/g;
+  for (const m of text.matchAll(todoRe)) issues.push({ file: rel, issue: 'todo', match: m[0] });
+  return issues;
+}
+
+const required = [];
+for (let s = 0; s <= parseInt(stage.slice(1)); s++) {
+  required.push(...(MAPPING['P' + s] || []));
+}
+
+const allIssues = [];
+for (const rel of required) allIssues.push(...scanFile(rel));
+
+if (allIssues.length === 0) {
+  console.log(`✓ completeness OK (stage ${stage}, ${required.length} docs checked)`);
+  process.exit(0);
+} else {
+  console.error(`✗ completeness FAIL (stage ${stage}):`);
+  for (const i of allIssues) console.error(`  ${i.file}: ${i.issue}${i.match ? ' ' + i.match : ''}`);
+  process.exit(1);
+}
