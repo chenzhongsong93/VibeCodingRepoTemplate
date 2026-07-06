@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import { rmSync, readFileSync } from 'node:fs';
+import { rmSync, readFileSync, readdirSync } from 'node:fs';
 import { fileTree } from './lib/tree.mjs';
 import { deadLinks } from './lib/links.mjs';
 import { assertTreeEqual, assertClean, assertContains } from './lib/diff.mjs';
@@ -221,3 +221,16 @@ for (const name of SCENARIOS) {
     }
   });
 }
+
+test('all scenarios: no dead markdown links', () => {
+  const scenarios = readdirSync('tests/scenarios', { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
+  for (const name of scenarios) {
+    const tmp = `/tmp/init-code-repo-deadlink-${name}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    const dead = deadLinks(tmp);
+    assert.equal(dead.length, 0, `${name} dead links:\n${dead.map(d => '  ' + d.file + ' -> ' + d.link).join('\n')}`);
+  }
+});

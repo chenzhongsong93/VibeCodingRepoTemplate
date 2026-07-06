@@ -14,5 +14,6 @@ export function assertContains(content, needle, label) {
 export function assertClean(content, label) {
   assert.ok(!/<!--IF:/.test(content), `[${label}] leftover <!--IF: marker`);
   assert.ok(!/<!--\/IF:/.test(content), `[${label}] leftover <!--/IF: marker`);
+  assert.ok(!/<!--require:/.test(content), `[${label}] leftover <!--require: marker`);
   assert.ok(!/\{\{\w+\}\}/.test(content), `[${label}] leftover {{VAR}}`);
 }
