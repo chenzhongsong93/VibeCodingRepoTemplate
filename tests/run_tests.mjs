@@ -135,3 +135,37 @@ test('lightweight: content snapshots match golden', () => {
     assert.equal(actual, expected, `snapshot mismatch: ${f}`);
   }
 });
+
+const FW_TMP = '/tmp/init-code-repo-test-full-workflow';
+
+test('full-workflow: L2/L3 steps + rust + doc-sync active', () => {
+  rmSync(FW_TMP, { recursive: true, force: true });
+  assemble(FW_TMP, JSON.parse(readFileSync('tests/scenarios/full-workflow/config.json', 'utf8')));
+
+  const dw = readFileSync(`${FW_TMP}/docs/rules/dev-workflow-rules.md`, 'utf8');
+  // L2/L3 present (full-workflow active)
+  assertOk(dw.includes('L2 集成测试'), 'L2 step present');
+  assertOk(dw.includes('L3 端到端测试'), 'L3 step present');
+  // docker inner conditional active → Docker description present
+  assertOk(dw.includes('Docker 镜像构建后跑契约测试'), 'docker L2 description present');
+  // step numbers unique: 记录 is step 7, 发布门控 is step 8 (not 5/6)
+  assertOk(dw.includes('7. **记录**'), '记录 is step 7');
+  assertOk(dw.includes('8. **发布门控**'), '发布门控 is step 8');
+  assertOk(!dw.includes('5. **记录**'), 'no duplicate 记录 at step 5');
+  assertOk(!dw.includes('6. **发布门控**'), 'no duplicate 发布门控 at step 6');
+  // three-tier-test NOT selected → its inline description stripped
+  assertOk(!dw.includes('跨模块集成回归'), 'three-tier-test description stripped');
+  assertClean(dw, 'full-workflow dev-workflow');
+
+  const lh = readFileSync(`${FW_TMP}/lefthook.yml`, 'utf8');
+  assertOk(lh.includes('cargo fmt'), 'rust fragment present');
+  assertOk(lh.includes('cargo clippy'), 'rust clippy present');
+  assertOk(lh.includes('doc-sync-check'), 'doc-sync pre-push gate present');
+  assertOk(lh.includes('gitleaks'), 'gitleaks present');
+  assertOk(!lh.includes('eslint'), 'no node fragment (node stack not selected)');
+  assertClean(lh, 'full-workflow lefthook');
+
+  // AGENTS cleanliness (no markers leaked)
+  const agents = readFileSync(`${FW_TMP}/AGENTS.md`, 'utf8');
+  assertClean(agents, 'full-workflow AGENTS');
+});
