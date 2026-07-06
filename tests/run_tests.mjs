@@ -311,3 +311,31 @@ test('runtime adapters: claude-code produces .claude/settings.json, others produ
   assertOk(!treeX.includes('README.md') || readFileSync(`${tmpX}/README.md`,'utf8').startsWith('# D'), 'codex does not overwrite README');
   assertOk(!treeX.some(f => f.startsWith('codex/')), 'no codex adapter dir');
 });
+
+for (const name of ['component', 'central-docs']) {
+  test(`${name}: file tree matches golden`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    assertTreeEqual(fileTree(tmp), JSON.parse(readFileSync(`tests/golden/${name}/expected-tree.json`, 'utf8')), `${name} tree`);
+  });
+
+  test(`${name}: role-specific content`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}-content`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    const a = readFileSync(`${tmp}/AGENTS.md`, 'utf8');
+    if (name === 'component') {
+      assertOk(a.includes('## 跨仓文档'), 'component AGENTS has 跨仓段');
+      assertOk(!a.includes('## 跨仓文档（中央 docs 仓）'), 'component AGENTS no central-docs段');
+      const cy = readFileSync(`${tmp}/doc/component.yaml`, 'utf8');
+      assertOk(cy.includes('name: comp-svc'), 'component.yaml has name');
+      assertClean(cy, 'component.yaml');
+    } else {
+      assertOk(a.includes('中央 docs 仓'), 'central-docs AGENTS has central段');
+      assertOk(readFileSync(`${tmp}/docs/components/registry.yaml`, 'utf8').includes('registry'), 'registry present');
+      assertOk(readFileSync(`${tmp}/scripts/aggregate.mjs`, 'utf8').includes('aggregate'), 'aggregate.mjs present');
+    }
+    assertClean(a, `${name} AGENTS`);
+  });
+}

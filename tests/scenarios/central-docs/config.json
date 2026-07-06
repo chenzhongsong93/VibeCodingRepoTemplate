@@ -1,0 +1,12 @@
+{
+  "projectName": "org-docs",
+  "oneLine": "中央 docs 仓",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": [],
+  "repoRole": "central-docs"
+}
