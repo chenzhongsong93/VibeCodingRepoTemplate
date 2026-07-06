@@ -26,12 +26,15 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 | 一句话定位 | 自由文本 | 填入 {{ONE_LINE}} |
 | 主栈 | 无 / rust / node / python / go / 多栈 | 决定叠加哪些 stacks/ |
 | 仓形态 | 单 app / monorepo | 决定布局 |
+| 仓角色 | 单仓 / 组件仓 / 中央 docs 仓 | 决定多仓模式：单仓=自包含；组件仓=带 component.yaml + 跨仓引用；中央 docs 仓=聚合脚本 + 跨仓视图 |
 | 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |
 | 远端托管 | gitcode / github / gitlab / 无 | remote=none 时无 remote-hook；否则有 |
 | Commit 门禁档 | 默认正则 / 自定义正则 / 不要求 | 决定 commit-msg 段 |
 | 可选组件 | 多选（见下表） | 决定装配范围与版本派生 |
 
 校验：必答项齐全；主栈与仓形态自洽。
+
+选组件仓时追问中央 docs 仓 URL；选中央 docs 仓时追问初始组件仓列表（写入 registry.yaml）。
 
 ### 阶段 2 · 骨架写入
 
