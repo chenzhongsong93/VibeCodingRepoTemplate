@@ -1,0 +1,15 @@
+<!--require:multi-repo-component-->
+# component.yaml — 本组件仓的自描述清单，供中央 docs 仓聚合
+# 修改后须通知中央 docs 仓刷新（或中央仓 aggregate 脚本自动拉取）。
+name: {{PROJECT_NAME}}
+type: self              # self / fork / upstream
+one-line: {{ONE_LINE}}
+repo: ""                # TODO: 填本仓 repo URL（agent 阶段 4 跑 `git remote get-url origin`）
+layer: ""               # 所属架构层（按本组织分层约定，如 L3）
+depends-on: []          # 依赖的其他组件 name 列表
+exposes: []             # 对外暴露接口，如 [{kind: http, path: /api/v1/...}, {kind: mcp, name: ...}]
+consumes: []            # 消费的其他组件接口，如 [{from: <name>, kind: http, path: /api/...}]
+single-repo-docs:
+  charter: docs/00-charter/
+  architecture: docs/02-design/system-architecture.md
+  deploy: infra/docker/

@@ -22,6 +22,8 @@ function extraConds(config) {
   else if (mode === 'none') conds.push('commit-none');
   for (const s of config.stacks || []) conds.push(s);
   for (const r of config.runtimes || []) conds.push(r);
+  if (config.repoRole === 'component') conds.push('multi-repo-component');
+  if (config.repoRole === 'central-docs') conds.push('central-docs');
   return conds;
 }
 
