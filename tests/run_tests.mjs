@@ -222,6 +222,30 @@ for (const name of SCENARIOS) {
   });
 }
 
+test('multi-stack: glue files + pre-receive present', () => {
+  const tmp = '/tmp/init-code-repo-test-multi-stack';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/multi-stack/config.json', 'utf8')));
+  const tree = fileTree(tmp);
+  const expected = JSON.parse(readFileSync('tests/golden/multi-stack/expected-tree.json', 'utf8'));
+  assertTreeEqual(tree, expected, 'multi-stack tree');
+  // stack glue files
+  assertOk(tree.includes('Makefile'), 'rust Makefile present');
+  assertOk(tree.includes('package.json'), 'node package.json present');
+  // remote gate
+  assertOk(tree.includes('pre-receive-remote/pre-receive'), 'pre-receive present (remote=github)');
+  // full-ledger
+  assertOk(tree.includes('docs/ledger/debt.md'), 'debt.md present (full-ledger)');
+  assertOk(tree.includes('docs/ledger/version-log.md'), 'version-log.md present (full-ledger)');
+  // substituted content
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('# Makefile — MultiStack'), 'Makefile has project name');
+  assertClean(mk, 'multi-stack Makefile');
+  const pj = readFileSync(`${tmp}/package.json`, 'utf8');
+  assertOk(pj.includes('"name": "MultiStack"'), 'package.json has project name');
+  assertClean(pj, 'multi-stack package.json');
+});
+
 test('all scenarios: no dead markdown links', () => {
   const scenarios = readdirSync('tests/scenarios', { withFileTypes: true })
     .filter(d => d.isDirectory())

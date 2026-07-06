@@ -3,14 +3,13 @@ import { join, dirname } from 'node:path';
 import { substitute } from './substitute.mjs';
 import { activeConds, stripConditionals } from './conditional.mjs';
 
+const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
+
 function walk(srcDir, out = []) {
   for (const entry of readdirSync(srcDir, { withFileTypes: true })) {
     const full = join(srcDir, entry.name);
-    if (entry.isDirectory()) {
-      walk(full, out);
-    } else {
-      out.push(full);
-    }
+    if (entry.isDirectory()) walk(full, out);
+    else out.push(full);
   }
   return out;
 }
@@ -25,7 +24,24 @@ function extraConds(config) {
   return conds;
 }
 
-const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
+function writeTree(srcDir, targetDir, ctx, activeSet) {
+  if (!existsSync(srcDir)) return;
+  for (const abs of walk(srcDir)) {
+    const rel = abs.slice(srcDir.length + 1).replace(/\\/g, '/');
+    let content = readFileSync(abs, 'utf8');
+    const req = content.match(REQUIRE_RE);
+    if (req) {
+      if (!activeSet.has(req[1])) continue;
+      content = content.slice(req[0].length);
+    }
+    content = substitute(content, ctx);
+    content = stripConditionals(content, [...activeSet]);
+    const outRel = rel.replace(/\.tmpl$/, '');
+    const outPath = join(targetDir, outRel);
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, content);
+  }
+}
 
 export function assemble(targetDir, config) {
   const ctx = {
@@ -36,24 +52,10 @@ export function assemble(targetDir, config) {
   };
   const conds = [...activeConds(config), ...extraConds(config)];
   const activeSet = new Set(conds);
-  const coreDir = join('skills/init-code-repo/templates/core');
-  const files = existsSync(coreDir) ? walk(coreDir) : [];
-  for (const abs of files) {
-    const rel = abs.slice(coreDir.length + 1).replace(/\\/g, '/');
-    let content = readFileSync(abs, 'utf8');
-    // Per-file conditional inclusion: a first-line <!--require:cond--> marker
-    // means the file is only written when cond is active. Core files have no
-    // marker and are always included.
-    const req = content.match(REQUIRE_RE);
-    if (req) {
-      if (!activeSet.has(req[1])) continue; // component inactive → skip file
-      content = content.slice(req[0].length); // strip marker line
-    }
-    content = substitute(content, ctx);
-    content = stripConditionals(content, conds);
-    const outRel = rel.replace(/\.tmpl$/, '');
-    const outPath = join(targetDir, outRel);
-    mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, content);
+  const root = 'skills/init-code-repo/templates';
+  writeTree(join(root, 'core'), targetDir, ctx, activeSet);
+  for (const stack of config.stacks || []) {
+    writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet);
   }
+  writeTree(join(root, 'gates'), targetDir, ctx, activeSet);
 }
