@@ -1,0 +1,103 @@
+<!--require:api-docs-->
+# {{PROJECT_NAME}} API 接口文档
+
+> 版本: v0.1.0 | 更新日期: {{YEAR}}-XX-XX
+> 基础路径: `/api/v1`（TODO: 确认实际前缀）
+
+---
+
+## 接口更新点（Changelog）
+
+> 本节记录接口层变更。
+
+### v0.1.0
+- 初始接口定义。
+
+---
+
+## 通用约定
+
+### 响应包装 `ApiResponse<T>`
+
+```json
+{ "success": true, "data": { }, "message": null }
+```
+
+错误响应：
+```json
+{ "success": false, "data": null, "message": "错误信息" }
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `success` | boolean | true 成功，false 失败 |
+| `data` | T | 业务数据；失败时为 null |
+| `message` | String | 错误描述（成功时为 null） |
+
+### 分页 `PageResponse<T>`
+
+```json
+{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0, "empty": true, "first": true, "last": true }
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `content` | List | 当前页数据 |
+| `page` | int | 页码（从 0 起） |
+| `size` | int | 每页条数 |
+| `totalElements` | long | 总记录数 |
+| `totalPages` | int | 总页数 |
+| `empty` | boolean | 是否空页 |
+| `first` | boolean | 是否首页 |
+| `last` | boolean | 是否末页 |
+
+### 认证
+- GET 请求：TODO（是否免认证）
+- 写操作（POST/PUT/DELETE）：TODO（`X-Internal-API-Key` 或 `Authorization: Bearer`）
+
+### 通用 filter 参数
+格式：`filter=<URL-encoded JSON>`。操作符：`eq`/`ne`/`like`/`in`/`nin`/`gt`/`gte`/`lt`/`lte`。多字段 AND 组合。
+
+### 错误码
+| 码 | 含义 |
+|----|------|
+| 400 | 请求参数错误 |
+| 401 | 未认证 |
+| 403 | 无权限 |
+| 404 | 资源不存在 |
+| 500 | 服务端错误 |
+
+---
+
+## 接口列表
+
+### §一 TODO 域
+
+#### `GET /api/v1/todo` — TODO 列表
+
+**说明**：TODO。
+
+**请求参数**：
+
+| 参数 | 位置 | 类型 | 必填 | 说明 |
+|------|------|------|------|------|
+| `page` | query | int | 否 | 页码 |
+
+**响应**：`PageResponse<Todo>`
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | long | ID |
+| `name` | String | 名称 |
+
+**请求示例**：
+```bash
+curl /api/v1/todo?page=0
+```
+
+**响应示例**：
+```json
+{ "success": true, "data": { "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0, "empty": true, "first": true, "last": true }, "message": null }
+```
+
+**错误场景**：401 未认证。

@@ -25,6 +25,8 @@ function extraConds(config) {
   return conds;
 }
 
+const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
+
 export function assemble(targetDir, config) {
   const ctx = {
     projectName: config.projectName,
@@ -33,11 +35,20 @@ export function assemble(targetDir, config) {
     commitRegex: config.commitGate?.regex || '',
   };
   const conds = [...activeConds(config), ...extraConds(config)];
+  const activeSet = new Set(conds);
   const coreDir = join('skills/init-code-repo/templates/core');
   const files = existsSync(coreDir) ? walk(coreDir) : [];
   for (const abs of files) {
     const rel = abs.slice(coreDir.length + 1).replace(/\\/g, '/');
     let content = readFileSync(abs, 'utf8');
+    // Per-file conditional inclusion: a first-line <!--require:cond--> marker
+    // means the file is only written when cond is active. Core files have no
+    // marker and are always included.
+    const req = content.match(REQUIRE_RE);
+    if (req) {
+      if (!activeSet.has(req[1])) continue; // component inactive → skip file
+      content = content.slice(req[0].length); // strip marker line
+    }
     content = substitute(content, ctx);
     content = stripConditionals(content, conds);
     const outRel = rel.replace(/\.tmpl$/, '');

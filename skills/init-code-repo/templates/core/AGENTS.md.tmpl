@@ -23,6 +23,9 @@
 <!--IF:three-tier-test-->
 | 测试规则 | [docs/rules/testing-rules.md](docs/rules/testing-rules.md) |
 <!--/IF:three-tier-test-->
+<!--IF:api-docs-->
+| API 文档 | [docs/02-design/api/api-reference.md](docs/02-design/api/api-reference.md) |
+<!--/IF:api-docs-->
 
 ## 代码仓结构
 
@@ -42,6 +45,21 @@
 ## 文档三类
 
 详见 [docs/rules/doc-ssot-rules.md](docs/rules/doc-ssot-rules.md)：正式 SSOT / 累积型台账 / 过程文档。
+<!--IF:product-docs-->
+
+## 六层真理源模型
+
+| 层级 | 文件 | 角色 |
+|------|------|------|
+| 商业层（最高） | `00-charter/guardrails.md` | 为什么做·怎么活 |
+| 战略层 | `00-charter/vision-strategy.md` | 凭什么赢·护城河 |
+| 产品层 | `01-product/` | 做成什么·交付给谁 |
+| 目标层 | `02-design/system-architecture.md` | 技术能力终点 |
+| 现实层 | 实测代码 | 当前所在，以实测为准 |
+| 桥梁层 | `HANDOVER.md` + `02-design/` | 如何从现实走向目标 |
+
+铁律：技术服务产品、产品服务战略、战略服务商业。任务前自检：服务哪一管？在 ROADMAP 哪个阶段门？溯源不到=停下确认。
+<!--/IF:product-docs-->
 
 ## 回应语言
 

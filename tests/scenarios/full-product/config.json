@@ -1,0 +1,11 @@
+{
+  "projectName": "FullProduct",
+  "oneLine": "产品级项目",
+  "year": "2026",
+  "stacks": ["rust", "node"],
+  "repoShape": "monorepo",
+  "runtimes": ["claude-code"],
+  "remote": "gitcode",
+  "commitGate": { "mode": "default" },
+  "components": ["product-docs", "docker", "three-tier-test", "clean-code", "agent-conduct", "full-ledger", "doc-sync", "remote-hook", "api-docs"]
+}

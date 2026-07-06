@@ -1,0 +1,25 @@
+# 文档治理
+
+## 三类文档
+
+| 类别 | 性质 | 生命周期 | 例子 |
+|------|------|----------|------|
+| 正式 SSOT | 治理型真相源，变更走治理 | 被回刷维护 | `02-design/`、`rules/`<!--IF:product-docs-->、`00-charter/`<!--/IF:product-docs--> |
+| 累积型台账 | 只增不删，归档=移至 `archive/` | 只增 | `HANDOVER.md`、`ledger/bugs`<!--IF:full-ledger-->|`debt|version-log`<!--/IF:full-ledger--> |
+| 过程文档 | 非 SSOT，追溯用 | 可作废 | `superpowers/specs/` |
+
+冲突时以正式 SSOT 为准。详见 [rules/doc-ssot-rules.md](../rules/doc-ssot-rules.md)。
+
+## 文档变更治理
+- 改 SSOT 前先看现状（读代码 + 现有文档）。
+- 改后审视回刷（军规 J）：引用路径、相关章节、ADR、术语表。
+- 过程稿落 `superpowers/specs/`，不得冒充基线（军规 B）。
+
+## 建模方法论
+- 设计文档：arc42 骨架 + 4+1 视图 + DDD 通用语言。
+- 用例视图驱动其余视图；事件风暴驱动用例与运行视图。
+- DFX（质量属性）为设计说明书一章，不独立成文。
+- 可视化用 Mermaid/PlantUML（军规 G）。
+
+## 设计图优先级
+Mermaid > PlantUML > 手绘图（手绘须数字化留存）。
