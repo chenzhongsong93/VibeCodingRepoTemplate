@@ -258,3 +258,37 @@ test('all scenarios: no dead markdown links', () => {
     assert.equal(dead.length, 0, `${name} dead links:\n${dead.map(d => '  ' + d.file + ' -> ' + d.link).join('\n')}`);
   }
 });
+
+test('SKILL.md: exists and documents assembly contract', () => {
+  const skill = readFileSync('skills/init-code-repo/SKILL.md', 'utf8');
+  assertOk(skill.startsWith('---\nname: init-code-repo'), 'SKILL has frontmatter');
+  assertOk(skill.includes('5 阶段向导流'), 'SKILL has wizard stages');
+  assertOk(skill.includes('阶段 0'), 'SKILL has stage 0');
+  assertOk(skill.includes('阶段 5'), 'SKILL has stage 5');
+  assertOk(skill.includes('手动装配规则'), 'SKILL has manual assembly rules');
+  assertOk(skill.includes('{{PROJECT_NAME}}'), 'SKILL documents variable substitution');
+  assertOk(skill.includes('<!--IF:cond-->'), 'SKILL documents conditional stripping');
+  assertOk(skill.includes('<!--require:cond-->'), 'SKILL documents require markers');
+  assertOk(skill.includes('激活集推导'), 'SKILL documents cond derivation');
+  assertOk(skill.includes('死链校验'), 'SKILL documents dead-link check');
+});
+
+test('runtime adapters: claude-code produces .claude/settings.json, others produce nothing', () => {
+  // claude-code → .claude/settings.json
+  const tmpC = '/tmp/init-code-repo-test-rt-cc';
+  rmSync(tmpC, { recursive: true, force: true });
+  assemble(tmpC, { projectName:'D', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const treeC = fileTree(tmpC);
+  assertOk(treeC.includes('.claude/settings.json'), 'claude-code produces .claude/settings.json');
+  // core README.md NOT overwritten by adapter (no adapter README exists)
+  const rm = readFileSync(`${tmpC}/README.md`, 'utf8');
+  assertOk(rm.startsWith('# D'), 'core README intact (not overwritten)');
+
+  // codex runtime → no extra files (adapter removed)
+  const tmpX = '/tmp/init-code-repo-test-rt-codex';
+  rmSync(tmpX, { recursive: true, force: true });
+  assemble(tmpX, { projectName:'D', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:['codex'], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const treeX = fileTree(tmpX);
+  assertOk(!treeX.includes('README.md') || readFileSync(`${tmpX}/README.md`,'utf8').startsWith('# D'), 'codex does not overwrite README');
+  assertOk(!treeX.some(f => f.startsWith('codex/')), 'no codex adapter dir');
+});

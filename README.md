@@ -14,12 +14,12 @@
 
 ## 安装
 
-skill 安装内容 = `skills/init-code-repo/SKILL.md` + `templates/` + `runtime-adapters/`。各 agent runtime：
+skill 安装内容 = `skills/init-code-repo/`（`SKILL.md` + `templates/`）。各 agent runtime：
 
 - **Claude Code**：将 `skills/init-code-repo/` 拷贝或软链至 `~/.claude/skills/init-code-repo/`（用户级）或项目 `.claude/skills/`。
 - **codex / opencode / kimicode / zcode**：将 `skills/init-code-repo/` 拷贝至对应 runtime 的 skills 目录。skill 仅依赖 `SKILL.md` 与 `templates/`，runtime 中立。
 
-> `skills/init-code-repo/assemble.mjs` 与 `tests/` 是**维护者工具**（确定性参考实现 + golden 测试预言机），不进入 end user 安装内容。
+调用时 agent 读 `SKILL.md`，按"手动装配规则"从 `templates/` 装配，零运行时依赖。选 Claude Code runtime 时附带 `.claude/settings.json`；其他 runtime 直读 `AGENTS.md`，无额外文件。
 
 ## 开发本仓（维护者，需 Node.js 22）
 
