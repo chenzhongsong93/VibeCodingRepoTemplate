@@ -25,3 +25,14 @@ test('strips IF block but keeps ELSE content', () => {
   assert.equal(stripConditionals(tpl, ['full-workflow']), 'FULL');
   assert.equal(stripConditionals(tpl, []), 'SLIM');
 });
+
+test('handles nested IF blocks (outer active, inner mixed)', () => {
+  const tpl = '<!--IF:full-workflow-->5. L2<!--IF:docker-->:Docker<!--/IF:docker--><!--IF:three-tier-test-->:e2e回归<!--/IF:three-tier-test-->.<!--/IF:full-workflow-->';
+  // docker active, three-tier-test inactive, full-workflow active (derived from docker)
+  assert.equal(
+    stripConditionals(tpl, ['full-workflow', 'docker']),
+    '5. L2:Docker.'
+  );
+  // outer inactive → whole block stripped, no inner leak
+  assert.equal(stripConditionals(tpl, []), '');
+});
