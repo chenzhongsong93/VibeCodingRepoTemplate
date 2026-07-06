@@ -6,6 +6,7 @@
   "docs/02-design/test-spec/README.md",
   "docs/HANDOVER.md",
   "docs/ROADMAP.md",
+  "docs/ledger/archive/.gitkeep",
   "docs/ledger/bugs.md",
   "docs/rules/commit-rules.md",
   "docs/rules/dev-workflow-rules.md",
