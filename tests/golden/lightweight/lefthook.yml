@@ -1,0 +1,20 @@
+# lefthook.yml — 机器关卡
+# 安装：cargo install lefthook && lefthook install
+# --no-verify 视为违规
+
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      run: gitleaks protect --staged --redact --verbose
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: |
+        msg=$(cat {1})
+        echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#\d+$' \
+          || { echo "❌ 提交信息不符: type(scope): subject #issue"; exit 1; }
+
+pre-push:
+  commands:

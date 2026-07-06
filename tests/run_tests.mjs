@@ -123,3 +123,15 @@ test('with-conduct: AGENTS includes conduct row', () => {
   // cleanliness
   assertClean(agents, 'with-conduct AGENTS');
 });
+
+test('lightweight: content snapshots match golden', () => {
+  const tmp = '/tmp/init-code-repo-test-snap';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, loadConfig('lightweight'));
+  const files = ['AGENTS.md', 'CLAUDE.md', 'lefthook.yml', 'docs/rules/commit-rules.md'];
+  for (const f of files) {
+    const actual = readFileSync(`${tmp}/${f}`, 'utf8');
+    const expected = readFileSync(`tests/golden/lightweight/${f}`, 'utf8');
+    assert.equal(actual, expected, `snapshot mismatch: ${f}`);
+  }
+});
