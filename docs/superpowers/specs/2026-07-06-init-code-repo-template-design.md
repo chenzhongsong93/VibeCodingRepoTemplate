@@ -79,6 +79,19 @@ VibeCodingRepoTemplate/
 - `runtime-adapters/` 收纳 runtime 专属产物，让核心保持中立。
 - 本仓 `docs/` 用 `init-code-repo` 自身格式组织（dogfooding）。
 
+### 3.4 双路径架构（消除 end user 运行时依赖）
+
+skill 的使用成本必须低：end user 建仓**零外部运行时依赖**（不要求 Node/Python/任何运行时）。通过拆分两条路径实现：
+
+| 路径 | 谁用 | 依赖 | 作用 |
+|---|---|---|---|
+| **Agent 驱动装配**（默认） | end user 建仓 | **零依赖** | `SKILL.md` 给精确装配规则（变量替换表 + 条件剥离规则），agent 自己读模板→替换→剥离→写文件。agent 本身就是运行时。 |
+| **引擎驱动装配**（可选） | 本仓维护者 | Node.js 22 | `skills/init-code-repo/assemble.mjs` 作为**确定性参考实现**+ golden 测试的**预言机**，验证模板与装配规则在演进中始终一致。end user 永不运行它。 |
+
+**一致性保证**：`SKILL.md` 的手动装配规则是 SSOT，`assemble.mjs` 实现同一规则，agent 也实现同一规则。golden 测试验证引擎输出符合预期，从而间接保证 agent 按规则装配的输出正确。`assemble.mjs` 与 `tests/` 不进入 end user 的 skill 安装内容（仅 `SKILL.md` + `templates/` + `runtime-adapters/` 安装）。
+
+**`SKILL.md` 必须包含"手动装配规则"段**（Plan 4 落地）：变量替换表（`{{PROJECT_NAME}}`/`{{ONE_LINE}}`/`{{YEAR}}`/`{{COMMIT_REGEX}}` → ctx 字段）+ 条件剥离规则（`<!--IF:cond-->` 语义、cond 派生表、嵌套处理、未匹配块整段移除）。让 agent 离线装配，输出与引擎一致。
+
 ---
 
 ## 4. `templates/` 内部结构
@@ -455,7 +468,9 @@ templates/ 全程只读引用；目标仓只写一次（阶段2-3），阶段4 �
 - **测试 SSOT**：`02-design/test-spec/` 持有用例设计，代码用例标注 `// 覆盖:§<节> <用例 ID>` 反向链接。
 - **bug ↔ 回归用例**：`ledger/bugs.md` 每条 bug 记录对应回归用例 ID，闭环 bug 必有回归测试落地。
 
-### 12.2 Skill 自身的测试（本仓 `tests/`）
+### 12.2 Skill 自身的测试（本仓 `tests/`，维护者 QA）
+
+> golden 测试是**维护者路径**（需 Node.js 22），不进入 end user 安装内容。end user 走 agent 驱动装配（零依赖，见 §3.4）。引擎作为测试预言机验证模板与装配规则一致。
 
 golden-repo 快照测试：
 
