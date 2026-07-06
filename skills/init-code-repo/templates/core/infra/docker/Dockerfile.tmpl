@@ -1,0 +1,24 @@
+<!--require:docker-->
+# Dockerfile — {{PROJECT_NAME}}
+# 多阶段构建骨架，按实际栈调整 build/runtime 阶段。
+
+# --- build stage ---
+FROM alpine:latest AS build
+WORKDIR /app
+# TODO: 装构建依赖、拷源、构建产物
+# COPY . .
+# RUN <build command>
+<!--IF:rust-->
+# Rust 示例：
+# RUN apk add --no-cache cargo && cargo build --release
+<!--/IF:rust-->
+<!--IF:node-->
+# Node 示例：
+# RUN apk add --no-cache nodejs npm && npm ci && npm run build
+<!--/IF:node-->
+
+# --- runtime stage ---
+FROM alpine:latest AS final
+WORKDIR /app
+# COPY --from=build /app/<artifact> .
+# CMD ["./<artifact>"]

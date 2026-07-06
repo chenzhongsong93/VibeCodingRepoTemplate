@@ -1,0 +1,12 @@
+<!--require:docker-->
+# docker-compose.yml — {{PROJECT_NAME}}
+# 本地开发与部署编排骨架。
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    # TODO: 按需补充 depends_on / volumes / restart
