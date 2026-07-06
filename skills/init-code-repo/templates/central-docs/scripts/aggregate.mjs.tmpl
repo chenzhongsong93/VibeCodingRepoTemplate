@@ -1,0 +1,71 @@
+<!--require:central-docs-->
+// aggregate.mjs — 中央 docs 仓聚合脚本
+// 读 docs/components/registry.yaml → 浅克隆各仓 → 读各仓 doc/component.yaml →
+// 生成 docs/architecture-overview.md（Mermaid 图按 layer 分组）+ contracts 矩阵。
+// 运行：node scripts/aggregate.mjs（需 git 凭证访问私有仓；公开仓无需）
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+
+const ROOT = process.cwd();
+const REGISTRY = join(ROOT, 'docs/components/registry.yaml');
+const TMP = '/tmp/central-docs-aggregate';
+
+function parseRegistry(text) {
+  const comps = [];
+  let cur = null;
+  for (const line of text.split('\n')) {
+    const m = line.match(/^\s*-\s+name:\s*(.+)$/);
+    if (m) { cur = { name: m[1].trim() }; comps.push(cur); continue; }
+    const r = line.match(/^\s*repo:\s*(.+)$/); if (r && cur) cur.repo = r[1].trim();
+    const b = line.match(/^\s*branch:\s*(.+)$/); if (b && cur) cur.branch = b[1].trim();
+  }
+  return comps.filter(c => c.name && c.repo);
+}
+
+function cloneShallow(comp) {
+  const dir = join(TMP, comp.name);
+  rmSync(dir, { recursive: true, force: true });
+  const branch = comp.branch || 'main';
+  execFileSync('git', ['clone', '--depth', '1', '--branch', branch, comp.repo, dir], { stdio: 'pipe' });
+  return dir;
+}
+
+function readComponentYaml(dir) {
+  const p = join(dir, 'doc/component.yaml');
+  if (!existsSync(p)) return null;
+  return readFileSync(p, 'utf8');
+}
+
+function field(yaml, key) {
+  const m = yaml.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+  return m ? m[1].trim() : '';
+}
+
+const registry = parseRegistry(readFileSync(REGISTRY, 'utf8'));
+rmSync(TMP, { recursive: true, force: true });
+mkdirSync(TMP, { recursive: true });
+
+const comps = [];
+for (const c of registry) {
+  try {
+    const dir = cloneShallow(c);
+    const y = readComponentYaml(dir);
+    if (y) comps.push({ name: c.name, layer: field(y, 'layer'), oneLine: field(y, 'one-line'), yaml: y });
+  } catch (e) { console.error(`skip ${c.name}: ${e.message}`); }
+}
+
+let md = '# 架构总览（聚合生成，勿手改）\n\n> 由 scripts/aggregate.mjs 从各仓 doc/component.yaml 聚合。改组件改其 component.yaml，重跑本脚本。\n\n';
+const byLayer = {};
+for (const c of comps) { const l = c.layer || '未分层'; (byLayer[l] = byLayer[l] || []).push(c); }
+md += '```mermaid\nflowchart TB\n';
+for (const [layer, cs] of Object.entries(byLayer)) {
+  md += `  subgraph ${layer.replace(/[^A-Za-z0-9]/g, '_')}["${layer}"]\n`;
+  for (const c of cs) md += `    ${c.name.replace(/[^A-Za-z0-9]/g, '_')}["${c.name}<br/>${c.oneLine}"]\n`;
+  md += '  end\n';
+}
+md += '```\n\n## 组件清单\n\n| 名称 | 层 | 一句话 |\n|---|---|---|\n';
+for (const c of comps) md += `| ${c.name} | ${c.layer || '-'} | ${c.oneLine} |\n`;
+writeFileSync(join(ROOT, 'docs/architecture-overview.md'), md);
+console.log(`aggregated ${comps.length} components → docs/architecture-overview.md`);
+rmSync(TMP, { recursive: true, force: true });

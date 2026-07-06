@@ -1,0 +1,12 @@
+{
+  "projectName": "comp-svc",
+  "oneLine": "组件服务",
+  "year": "2026",
+  "stacks": ["node"],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-conduct", "api-docs"],
+  "repoRole": "component"
+}

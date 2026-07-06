@@ -3,6 +3,19 @@
 > 本文件是本仓 SSOT 入口。所有 agent（人/AI）动手前必读。
 > 多端兼容：Claude CLI 经 `CLAUDE.md` 转引至此；codex/opencode/kimicode/zcode 直读本文件。
 
+<!--IF:multi-repo-component-->
+## 跨仓文档
+
+本仓是多仓组织的组件仓。跨仓文档（架构总图/ADR/契约/总部署）见中央 docs 仓。
+改本仓 `doc/component.yaml` 后，须通知中央 docs 仓刷新（或中央仓 aggregate 脚本自动拉取）。
+<!--/IF:multi-repo-component-->
+<!--IF:central-docs-->
+## 跨仓文档（中央 docs 仓）
+
+本仓是多仓组织的中央 docs 仓。**视图非源**：架构总图/契约矩阵由 `scripts/aggregate.mjs` 从各组件仓 `doc/component.yaml` 聚合生成，不手工维护。
+新增/删除组件仓 → 改 `docs/components/registry.yaml` → 重跑 `node scripts/aggregate.mjs`。
+
+<!--/IF:central-docs-->
 ## 项目一句话
 
 {{ONE_LINE}}
@@ -54,9 +67,9 @@
 | 商业层（最高） | `00-charter/guardrails.md` | 为什么做·怎么活 |
 | 战略层 | `00-charter/vision-strategy.md` | 凭什么赢·护城河 |
 | 产品层 | `01-product/` | 做成什么·交付给谁 |
-| 目标层 | `02-design/system-architecture.md` | 技术能力终点 |
+| 目标层（北极星）| `02-design/north-star.md` | 技术能力终点，永不废弃·允许领先现实 |
 | 现实层 | 实测代码 | 当前所在，以实测为准 |
-| 桥梁层 | `HANDOVER.md` + `02-design/` | 如何从现实走向目标 |
+| 桥梁层 | `02-design/system-architecture.md` + `HANDOVER.md` | 当前架构设计 + 交接，如何走向目标 |
 
 铁律：技术服务产品、产品服务战略、战略服务商业。任务前自检：服务哪一管？在 ROADMAP 哪个阶段门？溯源不到=停下确认。
 <!--/IF:product-docs-->

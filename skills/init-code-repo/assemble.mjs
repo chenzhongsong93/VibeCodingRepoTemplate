@@ -22,6 +22,8 @@ function extraConds(config) {
   else if (mode === 'none') conds.push('commit-none');
   for (const s of config.stacks || []) conds.push(s);
   for (const r of config.runtimes || []) conds.push(r);
+  if (config.repoRole === 'component') conds.push('multi-repo-component');
+  if (config.repoRole === 'central-docs') conds.push('central-docs');
   return conds;
 }
 
@@ -55,6 +57,9 @@ export function assemble(targetDir, config) {
   const activeSet = new Set(conds);
   const root = 'skills/init-code-repo/templates';
   writeTree(join(root, 'core'), targetDir, ctx, activeSet);
+  if (config.repoRole === 'central-docs') {
+    writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet);
+  }
   for (const stack of config.stacks || []) {
     writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet);
   }
