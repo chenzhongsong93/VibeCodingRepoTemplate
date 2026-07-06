@@ -1,0 +1,3 @@
+# VibeCodingRepoTemplate
+
+VibeCoding代码仓模板
