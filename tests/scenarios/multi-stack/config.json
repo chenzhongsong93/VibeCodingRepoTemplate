@@ -1,0 +1,11 @@
+{
+  "projectName": "MultiStack",
+  "oneLine": "多栈 monorepo",
+  "year": "2026",
+  "stacks": ["rust", "node"],
+  "repoShape": "monorepo",
+  "runtimes": [],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["full-ledger", "doc-sync"]
+}
