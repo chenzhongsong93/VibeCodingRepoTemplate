@@ -46,23 +46,31 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 - 从 `templates/gates/` 写入门禁文件（按 require 标记条件包含）。
 - 按目标 runtime 从 `templates/runtime-adapters/<runtime>/` 写入适配片段。
 
-### 阶段 4 · 填充引导
+### 阶段 4 · 填充引导（起草非留白）
 
-逐节带用户填占位，每节给检查清单 + 校验：
+逐节处理，**先起草能起草的，留 TODO 只给真正需要用户领域知识的**：
 
-1. `00-charter/`（若选）：愿景/战略/护栏
-2. `02-design/system-architecture.md`（若选）：技术栈/架构骨架
-3. `ROADMAP.md`：P0 首阶段门
-4. `AGENTS.md` 仓库布局段：按所选栈形态填实际目录树
-5. `HANDOVER.md` 首条交接：本轮首做 + 当前阶段门标注
+1. `00-charter/concept.md`（若选）：起草"一句话定义"（从 one-line）、"它是什么"（one-line 改写）；"核心概念"留 TODO。
+2. `02-design/north-star.md`（若选）：从 one-line + charter 起草"终态愿景"草稿；"不变量""允许领先现实"留 TODO。
+3. `02-design/system-architecture.md`（若选）：起草构建块视图（按 stacks+repoShape：monorepo→apps/api+apps/web）、技术栈段（按 stacks）；领域模型/运行时序留 TODO。
+4. `doc/component.yaml`（组件仓）：填 name、one-line、repo（跑 `git remote get-url origin`）、single-repo-docs 路径；layer/depends-on/exposes/consumes 留 TODO。
+5. `02-design/api/api-reference.md`（若选）：通用约定层已有；接口列表留 TODO。
+6. `ROADMAP.md`：起草 P0 首阶段门占位。
+7. `AGENTS.md` 仓库布局段：按所选栈形态填实际目录树。
+8. `HANDOVER.md` 首条交接：本轮首做 + 当前阶段门标注。
 
-每节可跳过（留 TODO）。校验：占位符残留扫描；AGENTS.md 布局段与实际目录一致。
+每节起草后提示"是否符合"，可跳过（留 TODO）。校验：占位符 `{{...}}` 残留扫描；AGENTS 布局段与实际目录一致。
 
 ### 阶段 5 · 验收
 
 - SSOT 一致性：`AGENTS.md` 索引的文件全部存在；三类文档分类在 `doc-governance.md` 已写明；死链扫描（所有 markdown 链接指向实际存在文件）。
 - 打印完成清单：已写文件树、未填占位列表、下一步建议。
 - 不自动 commit/push（除非用户显式要求）。
+
+**设计完整性门控**：读 HANDOVER.md 顶部"当前阶段门" → 按 [design-completeness-rules.md](docs/rules/design-completeness-rules.md) 的阶段门→必填文档映射 → 扫描必填文档的 `（TODO: ...）` 残留与空节 → 列未填项。有残留=阻断发布门控（除非用户显式跳过并记入 HANDOVER 待办）。
+
+**末尾主动引导 fill-design-doc**：阶段 5 末尾，列出当前残留 TODO 清单（按文档归类），询问用户"是否现在用 fill-design-doc skill 逐节填充？"。用户同意 → 调用 `fill-design-doc` skill 逐文档处理；用户拒绝 → 在 HANDOVER.md 记录"待填充 TODO 列表"作为下轮首做。这闭环 init→fill，避免 TODO 被遗忘。
+
 
 ---
 
