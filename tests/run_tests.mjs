@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import { rmSync, readFileSync } from 'node:fs';
 import { fileTree } from './lib/tree.mjs';
+import { deadLinks } from './lib/links.mjs';
 import { assertTreeEqual, assertClean, assertContains } from './lib/diff.mjs';
 import assert from 'node:assert/strict';
 import { assemble } from '../skills/init-code-repo/assemble.mjs';
@@ -190,3 +191,33 @@ test('require-marker: optional files included only when component active', () =>
   assertOk(ac.startsWith('# Agent 行为军规'), 'file starts with title after marker strip');
   assertClean(ac, 'with-conduct agent-conduct-rules');
 });
+
+const SCENARIOS = ['standard', 'full-product'];
+
+for (const name of SCENARIOS) {
+  test(`${name}: file tree matches golden`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    const actual = fileTree(tmp);
+    const expected = JSON.parse(readFileSync(`tests/golden/${name}/expected-tree.json`, 'utf8'));
+    assertTreeEqual(actual, expected, `${name} tree`);
+  });
+
+  test(`${name}: no dead markdown links`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}-links`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    const dead = deadLinks(tmp);
+    assert.equal(dead.length, 0, `${name} dead links:\n${dead.map(d => '  ' + d.file + ' -> ' + d.link).join('\n')}`);
+  });
+
+  test(`${name}: cleanliness (no leftover markers/vars)`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}-clean`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    for (const f of fileTree(tmp)) {
+      if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`, 'utf8'), `${name}:${f}`);
+    }
+  });
+}
