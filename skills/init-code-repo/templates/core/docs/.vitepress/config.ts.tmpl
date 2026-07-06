@@ -1,0 +1,35 @@
+<!--require:docs-site-->
+// VitePress 配置 — 把 docs/ 渲染成静态 HTML 站点。
+// 构建：npx vitepress build docs（需 Node.js；产物在 docs/.vitepress/dist，非 SSOT，不进 git）
+// 本地预览：npx vitepress dev docs
+import { defineConfig } from 'vitepress';
+
+export default defineConfig({
+  title: '{{PROJECT_NAME}}',
+  description: '{{ONE_LINE}}',
+  srcDir: '.',
+  base: '/',
+  lang: 'zh-CN',
+  markdown: { lineNumbers: true },
+  nav: [
+    { text: '章程', link: '/00-charter/readme' },
+    { text: '设计', link: '/02-design/system-architecture' },
+    { text: '规则', link: '/rules/dev-workflow-rules' },
+  ],
+  sidebar: {
+    '/': [
+      { text: '顶层', items: [{ text: 'ROADMAP', link: '/ROADMAP' }, { text: 'HANDOVER', link: '/HANDOVER' }] },
+      { text: '章程', items: [{ text: '概念', link: '/00-charter/concept' }] },
+      { text: '设计', items: [
+        { text: '系统架构', link: '/02-design/system-architecture' },
+        { text: '北极星', link: '/02-design/north-star' },
+        { text: '文档治理', link: '/02-design/doc-governance' },
+      ]},
+      { text: '规则', items: [
+        { text: '研发流程', link: '/rules/dev-workflow-rules' },
+        { text: '提交规范', link: '/rules/commit-rules' },
+        { text: 'SSOT 治理', link: '/rules/doc-ssot-rules' },
+      ]},
+    ],
+  },
+});

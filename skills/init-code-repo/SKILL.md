@@ -149,6 +149,7 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 | 代码-文档同步检查 | doc-sync | （lefthook pre-push 片段，已内联） | lefthook pre-push 加 doc-sync |
 | 远端 pre-receive hook | remote-hook | gates/pre-receive-remote/ | commit-rules 标注远端强控 |
 | API 文档 | api-docs | 02-design/api/api-reference.md | AGENTS 索引加 api 行 |
+| 文档站点（HTML 生成站） | docs-site | docs/.vitepress/config.ts | 维护者侧 npx vitepress build 生成 HTML 站，markdown 为源 |
 
 ### Commit 门禁三档
 
