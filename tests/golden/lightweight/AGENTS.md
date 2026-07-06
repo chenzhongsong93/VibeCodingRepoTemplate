@@ -14,6 +14,7 @@
 | 研发流程 | [docs/rules/dev-workflow-rules.md](docs/rules/dev-workflow-rules.md) |
 | 提交规范 | [docs/rules/commit-rules.md](docs/rules/commit-rules.md) |
 | SSOT/文档治理 | [docs/rules/doc-ssot-rules.md](docs/rules/doc-ssot-rules.md) |
+| 设计完整性门控 | [docs/rules/design-completeness-rules.md](docs/rules/design-completeness-rules.md) |
 
 ## 代码仓结构
 

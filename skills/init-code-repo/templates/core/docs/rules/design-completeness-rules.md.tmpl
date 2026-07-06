@@ -1,0 +1,29 @@
+# 设计完整性门控规则
+
+> 发布前必填设计文档的门控。与 [dev-workflow-rules.md](dev-workflow-rules.md) 第 8 步配合：本文件定映射与扫描规则，那一份定流程位置。
+
+## 阶段门→必填文档映射（默认，可在 ROADMAP.md 覆盖）
+
+| 阶段门 | 必填（非 TODO）设计文档 |
+|---|---|
+| P0 | `00-charter/concept.md`、`00-charter/guardrails.md`、`00-charter/vision-strategy.md`、`02-design/north-star.md`、`ROADMAP.md` |
+| P1 | + `02-design/system-architecture.md`、`02-design/entity-model.md`、`02-design/api/api-reference.md` |
+| P2 | + `02-design/ui-design/README.md`、`02-design/test-spec/README.md`（完整三层） |
+| P3 | + ADR 审视、`ledger/debt.md` 收口 |
+
+> 未选某可选组件时，其对应的必填文档跳过（如未选 product-docs，charter/north-star 不要求）。
+
+## TODO 残留扫描
+
+- 扫描必填文档内的 `（TODO: ...）` 与 `（TODO/fill：...）` 残留。
+- 扫描"空节"：节标题下仅有占位文本无实质内容。
+- 任一必填文档有 TODO 残留/空节 → 当前阶段门门控失败 → 阻断发布。
+
+## 检查机制（双路径）
+
+- **agent 路径**（SKILL.md 阶段 5 + dev-workflow 第 8 步）：agent 读 HANDOVER.md 顶部"当前阶段门" → 查映射 → 扫描必填文档 → 列未填项 → 阻断或放行。
+- **引擎路径**（维护者预言机）：`node scripts/check-completeness.mjs --stage <P0|P1|...>`，同逻辑，golden 测试覆盖。
+
+## 阶段门当前值
+
+从 `HANDOVER.md` 顶部"当前阶段门"读取（与 `ROADMAP.md` 配对）。无值视为 P0。

@@ -21,6 +21,7 @@
   "docs/ledger/archive/.gitkeep",
   "docs/ledger/bugs.md",
   "docs/rules/commit-rules.md",
+  "docs/rules/design-completeness-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
   "docs/superpowers/specs/.gitkeep",

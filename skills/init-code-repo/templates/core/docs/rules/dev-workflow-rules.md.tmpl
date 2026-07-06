@@ -12,10 +12,10 @@
 5. **L2 集成测试**<!--IF:docker-->：Docker 镜像构建后跑契约测试<!--/IF:docker--><!--IF:three-tier-test-->：跨模块集成回归<!--/IF:three-tier-test-->。
 6. **L3 端到端测试**：e2e 验证。
 7. **记录**：刷新 [ledger/](../ledger/) 台账与交接。
-8. **发布门控**：lint 全绿、测试全绿、SSOT 一致性检查。
+8. **发布门控**：lint 全绿、测试全绿、SSOT 一致性检查、**设计完整性门控**（按 [design-completeness-rules.md](design-completeness-rules.md) 扫当前阶段门必填文档的 TODO 残留，有残留=阻断）。
 <!--ELSE-->
 5. **记录**：刷新 [ledger/](../ledger/) 台账与交接。
-6. **发布门控**：lint 全绿、测试全绿、SSOT 一致性检查。
+6. **发布门控**：lint 全绿、测试全绿、SSOT 一致性检查、**设计完整性门控**（按 [design-completeness-rules.md](design-completeness-rules.md) 扫当前阶段门必填文档的 TODO 残留，有残留=阻断）。
 <!--/IF:full-workflow-->
 
 注：未选 Docker/三层测试时跳过 L2/L3（上列 ELSE 分支，步骤 5-6）。
