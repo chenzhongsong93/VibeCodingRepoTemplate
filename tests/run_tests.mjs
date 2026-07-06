@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import { rmSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { fileTree } from './lib/tree.mjs';
 import { deadLinks } from './lib/links.mjs';
 import { assertTreeEqual, assertClean, assertContains } from './lib/diff.mjs';
@@ -368,4 +369,26 @@ test('deadLinks: scans .html <a href>', () => {
   assertOk(dead.some(d => d.target === 'missing.html'), 'missing.html flagged');
   assertOk(!dead.some(d => d.target === 'good.html'), 'good.html not flagged');
   assertOk(!dead.some(d => d.link.startsWith('https://') || d.link.startsWith('#')), 'ext/anchor ignored');
+});
+
+test('fill-design-doc: SKILL.md exists and documents guided fill', () => {
+  const skill = readFileSync('skills/fill-design-doc/SKILL.md', 'utf8');
+  assertOk(skill.startsWith('---\nname: fill-design-doc'), 'fill skill frontmatter');
+  assertOk(skill.includes('逐节追问'), 'fill skill guided Q&A');
+  assertOk(skill.includes('起草该节'), 'fill skill drafts from answers');
+  assertOk(skill.includes('完整性门控'), 'fill skill triggers completeness');
+});
+
+test('check-completeness.mjs: shipped to generated repo + flags TODO residue', () => {
+  // assemble full-product (has product-docs → charter/north-star with TODO residue)
+  const tmp = '/tmp/init-code-repo-test-completeness';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/full-product/config.json', 'utf8')));
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('scripts/check-completeness.mjs'), 'check-completeness.mjs shipped to generated repo');
+  // run the shipped script against the assembled repo (P0 → charter/north-star TODO → exit 1)
+  const r = spawnSync('node', [`${tmp}/scripts/check-completeness.mjs`, '--stage', 'P0', '--root', tmp]);
+  assertOk(r.status === 1, 'check-completeness exits 1 on TODO residue');
+  const err = String(r.stderr);
+  assertOk(err.includes('concept.md') || err.includes('north-star.md'), 'stderr mentions a TODO-bearing doc');
 });

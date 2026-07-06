@@ -21,5 +21,6 @@
   "docs/superpowers/specs/.gitkeep",
   "lefthook.yml",
   "package.json",
-  "pre-receive-remote/pre-receive"
+  "pre-receive-remote/pre-receive",
+  "scripts/check-completeness.mjs"
 ]

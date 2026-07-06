@@ -36,5 +36,6 @@
   "infra/docker/docker-compose.yml",
   "lefthook.yml",
   "package.json",
-  "pre-receive-remote/pre-receive"
+  "pre-receive-remote/pre-receive",
+  "scripts/check-completeness.mjs"
 ]

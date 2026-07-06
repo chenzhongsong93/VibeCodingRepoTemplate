@@ -25,5 +25,6 @@
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
   "docs/superpowers/specs/.gitkeep",
-  "lefthook.yml"
+  "lefthook.yml",
+  "scripts/check-completeness.mjs"
 ]
