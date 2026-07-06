@@ -1,0 +1,11 @@
+{
+  "projectName": "DemoTool",
+  "oneLine": "一个小工具",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": []
+}

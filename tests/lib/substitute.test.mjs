@@ -17,3 +17,10 @@ test('leaves unknown placeholders untouched', () => {
   });
   assert.equal(out, 'Demo {{UNKNOWN}}');
 });
+
+test('substitutes COMMIT_REGEX', () => {
+  const out = substitute('regex: {{COMMIT_REGEX}}', {
+    projectName: '', oneLine: '', year: '2026', commitRegex: '^.+$',
+  });
+  assert.equal(out, 'regex: ^.+$');
+});
