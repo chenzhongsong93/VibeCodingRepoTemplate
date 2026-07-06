@@ -8,17 +8,18 @@ export function activeConds(config) {
 
 export function stripConditionals(text, active) {
   const activeSet = new Set(active);
-  // IF/ELSE blocks first (condition names may contain hyphens, e.g. full-workflow)
+  // IF/ELSE blocks first. \n? after each marker consumes the marker's own
+  // trailing newline so stripped blocks leave no dangling blank line and
+  // kept content (including paragraph breaks) is never modified.
   let out = text.replace(
-    /<!--IF:([\w-]+)-->([\s\S]*?)<!--ELSE-->([\s\S]*?)<!--\/IF:\1-->/g,
+    /<!--IF:([\w-]+)-->\n?([\s\S]*?)<!--ELSE-->\n?([\s\S]*?)<!--\/IF:\1-->\n?/g,
     (m, cond, ifBody, elseBody) =>
       activeSet.has(cond) ? ifBody : elseBody
   );
   // IF-only blocks
   out = out.replace(
-    /<!--IF:([\w-]+)-->([\s\S]*?)<!--\/IF:\1-->/g,
+    /<!--IF:([\w-]+)-->\n?([\s\S]*?)<!--\/IF:\1-->\n?/g,
     (m, cond, body) => (activeSet.has(cond) ? body : '')
   );
-  // Collapse blank lines left by stripping marker-only lines
-  return out.replace(/\n{2,}/g, '\n');
+  return out;
 }
