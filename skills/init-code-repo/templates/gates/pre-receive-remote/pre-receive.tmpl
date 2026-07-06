@@ -1,0 +1,23 @@
+<!--require:remote-hook-->
+#!/bin/sh
+# pre-receive hook — 远端提交规范校验（gitcode pre-receive 式）
+# 安装：放至远端仓库 hooks/pre-receive 并 chmod +x
+# 校验 commit message 正则：^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#\d+$
+
+zero="0000000000000000000000000000000000000000"
+regex='^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#[0-9]+$'
+
+while read -r oldrev newrev refname; do
+  if [ "$newrev" = "$zero" ]; then continue; fi
+  range="$oldrev..$newrev"
+  [ "$oldrev" = "$zero" ] && range="$newrev"
+  for rev in $(git rev-list "$range" --not --all); do
+    msg=$(git log -1 --format=%s "$rev")
+    if ! echo "$msg" | grep -qE "$regex"; then
+      echo "❌ commit $rev 信息不符: type(scope): subject #issue"
+      echo "  实际: $msg"
+      exit 1
+    fi
+  done
+done
+exit 0

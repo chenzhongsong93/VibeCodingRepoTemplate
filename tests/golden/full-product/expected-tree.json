@@ -27,5 +27,6 @@
   "docs/rules/testing-rules.md",
   "docs/superpowers/specs/.gitkeep",
   "lefthook.yml",
-  "package.json"
+  "package.json",
+  "pre-receive-remote/pre-receive"
 ]
