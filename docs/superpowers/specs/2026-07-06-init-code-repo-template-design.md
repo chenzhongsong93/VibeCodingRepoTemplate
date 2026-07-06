@@ -39,7 +39,7 @@ Vibe Coding 时代，AI 产出大量代码与文档产物，代码仓面临：
 |---|---|---|
 | 1 | 交付机制 | 本仓即 Skill 仓，内嵌模板文件，运行时中立，README 提供各 runtime 安装方式 |
 | 2 | 技术栈立场 | 语言中立核心 + 可插拔栈模块 |
-| 3 | 文档分类法 | 混合：编号叙事（00-charter…03-roadmap）+ `rules/` 铁律 + `ledger/` 台账 + `superpowers/specs/` 过程稿 |
+| 3 | 文档分类法 | 混合：编号叙事（00-charter…02-design）+ 根级 `ROADMAP/HANDOVER` 配对 + `rules/` 铁律 + `ledger/` 台账 + `superpowers/specs/` 过程稿 |
 | 4 | 执行形态 | 方案 A：交互式向导 + 模块化文件布局（吸收方案 C） |
 | 5 | Bug 清单性质 | 累积型台账（非过程文档、非普通 SSOT），入 `ledger/bugs.md`，关联回归用例 ID |
 | 6 | 研发流程 | TianQuan 8 步流程为干 + CyberWork 军规 A–J 为"Agent 行为铁律"（正交双轴） |
@@ -103,14 +103,15 @@ templates/core/
 │   ├── 02-design/                 # 设计文档
 │   │   ├── system-architecture.md.tmpl   # arc42+4+1+DDD 骨架（可选组件）
 │   │   ├── doc-governance.md.tmpl        # 文档治理 + 三类文档分类 + 台账刷新责任表
+│   │   ├── api/                          # API 文档（可选组件 api-docs）
+│   │   │   └── api-reference.md.tmpl     # AWB 级：changelog+通用约定+通用 filter+每接口骨架
 │   │   └── test-spec/                    # 测试设计 SSOT
 │   │       ├── README.md.tmpl            # 精简骨架 / 完整三层格式（按派生）
 │   │       └── bugs.md.tmpl              # → 实际落 ledger/bugs.md，此处仅为占位说明
-│   ├── 03-roadmap/                # 前瞻路线图
-│   │   └── roadmap.md.tmpl
+│   ├── ROADMAP.md.tmpl            # 前瞻路线图（根，与 HANDOVER.md 配对）
+│   ├── HANDOVER.md.tmpl           # 进展 + 交接（根，累积台账，与 ROADMAP 配对）
 │   ├── ledger/                    # 累积型台账统一处
 │   │   ├── bugs.md.tmpl           # Bug 台账（累积，根因/预防/回归用例 ID）
-│   │   ├── progress.md.tmpl       # 进展 + 交接（累积，含 handover）
 │   │   ├── debt.md.tmpl           # 技术债务台账（可选组件）
 │   │   ├── version-log.md.tmpl    # 版本记录（可选组件）
 │   │   └── archive/               # 归档区：按版本/周期切片
@@ -172,6 +173,29 @@ templates/runtime-adapters/
 └── zcode/
 ```
 
+### 4.5 API 文档模板结构（AWB 级，可选组件 `api-docs`）
+
+`02-design/api/api-reference.md.tmpl` 采用 AWB `api-reference.md` 结构（约定层前置 + 每接口骨架），不平铺：
+
+1. **头部**：标题 + 版本 + 更新日期 + 破坏性变更说明 + 基础路径。
+2. **接口更新点（Changelog）**：按版本记录接口层变更（数据迁移见 CHANGELOG）。
+3. **通用约定**（前置，所有接口共享）：
+   - 响应包装 `ApiResponse<T>`（success/data/message + 字段表 + 错误响应示例）
+   - 分页 `PageResponse<T>`（content/page/size/totalElements/totalPages/empty/first/last + 字段表）
+   - 认证（GET 免认证；写操作 `X-Internal-API-Key` / `Authorization: Bearer`）
+   - 通用 filter 参数（URL-encoded JSON）+ 操作符表（eq/ne/like/in/nin/gt/gte/lt/lte + 示例）
+   - 错误码表
+4. **每接口段落**（§一、§二…，按业务域分组）：
+   - 接口说明（一句话用途 + 破坏性变更注）
+   - 方法 + 路径（`GET /api/v1/...`）
+   - 请求参数表（path / query / body，含字段/类型/必填/说明）
+   - 响应字段表（字段/类型/说明，嵌套结构展开）
+   - 请求示例（curl 或 JSON）
+   - 响应示例（成功 + 失败 JSON）
+   - 错误场景
+
+**与 CyberWork `http.md` 的差异**：CyberWork 的 http.md 内容稀疏；本模板强制"通用约定层 + 每接口六要素"，达到 AWB 丰满度。
+
 ---
 
 ## 5. 文档分类模型
@@ -188,7 +212,7 @@ templates/runtime-adapters/
 
 ### 5.2 分类法落地
 
-- **编号叙事层**（`00-charter` → `03-roadmap`）：编号即阅读顺序。
+- **编号叙事层**（`00-charter` → `02-design`）：编号即阅读顺序。`ROADMAP.md`/`HANDOVER.md` 升至 `docs/` 根，作为"前瞻/现状"导航配对，agent 每轮首读。
 - **`rules/` 铁律层**：独立于编号，违反 = 构建阻断。`AGENTS.md` 顶部强制规则索引逐条指向。
 - **`ledger/` 台账层**：累积型台账统一处。
 - **`superpowers/specs/` 过程层**：非 SSOT。
@@ -202,14 +226,14 @@ templates/runtime-adapters/
 
 | 台账 | 文件 | 刷新时机 | 谁刷新 | 刷新内容 |
 |---|---|---|---|---|
-| 进展/交接 | `ledger/progress.md` | 每轮迭代第 7 步 | agent | 顶部"当前交接追加"+下轮首做 |
+| 进展/交接 | `HANDOVER.md`（docs 根） | 每轮迭代第 7 步 | agent | 顶部"当前交接追加"+下轮首做；与 `ROADMAP.md` 配对，标注当前所处阶段门 |
 | Bug | `ledger/bugs.md` | 发现 bug 时 + 闭环时 | agent | 新增/状态变更+根因+回归用例 ID |
 | 债务 | `ledger/debt.md` | 引入临时规避时 + 偿还时 | agent | 新增/标记偿还 |
 | 版本 | `ledger/version-log.md` | 每次发布 | devops/agent | 版本号+变更摘要 |
 
 ### 6.2 交接刷新边界
 
-`progress.md`（含 handover）刷新**只发生在每轮迭代第 7 步**，不在其他步骤随意改；只追加"当前交接追加"段，历史段不回改（台账只增原则）。
+`HANDOVER.md`（含 handover）刷新**只发生在每轮迭代第 7 步**，不在其他步骤随意改；只追加"当前交接追加"段，历史段不回改（台账只增原则）。`HANDOVER.md` 顶部须标注当前在 `ROADMAP.md` 的哪个阶段门，便于"走偏自检"。
 
 ### 6.3 归档转存机制
 
@@ -217,17 +241,16 @@ templates/runtime-adapters/
 docs/ledger/
 ├── bugs.md                 # 主文件：未闭环 + 近期闭环（近 N 条，如 30）
 ├── debt.md                 # 主文件：未偿还 + 近期偿还
-├── progress.md             # 主文件：当前阶段交接
 ├── version-log.md          # 主文件：近几个版本
 └── archive/                # 归档区：按版本/周期切片
     ├── bugs-2026-Q2.md
     ├── debt-2026-Q2.md
-    ├── progress-P0.md
+    ├── handover-P0.md      # HANDOVER.md 按阶段门归档
     └── version-log-2026.md
 ```
 
 - **触发**：发布时（devops 触发）+ 阈值提醒（agent 检测主文件超阈值如 50 条闭环 bug 时，提示用户归档）。
-- **切片维度**：bugs/debt 按发布版本或季度；progress 按阶段门；version-log 按年。
+- **切片维度**：bugs/debt 按发布版本或季度；HANDOVER 按阶段门（P0/P1…）；version-log 按年。
 - **归档动作**：闭环/已偿还/已过阶段 条目移入 `archive/<名>-<版本>.md`，主文件保留近 N 条 + 全部未闭环。
 - **不删只移**：归档 = 从主文件移至 archive，仍可检索，永不删。
 - **根因提炼**：归档时同步审视根因模式，高频根因提炼成 `rules/` 预防规则。
@@ -284,7 +307,7 @@ docs/ledger/
 
 ### 9.1 核心必带（不问）
 
-`AGENTS.md` 瘦版 + `CLAUDE.md` 指针 + `README` + `.gitignore` + `ERROR_LOG.md` + `REVIEW.md` + `rules/commit-rules.md`（按档）+ `rules/dev-workflow-rules.md`（精简）+ `rules/doc-ssot-rules.md` + `02-design/test-spec/`（骨架）+ `02-design/doc-governance.md` + `ledger/bugs.md` + `ledger/progress.md` + `ledger/archive/` + `superpowers/specs/` + 所选栈门禁 + `gitleaks`。
+`AGENTS.md` 瘦版 + `CLAUDE.md` 指针 + `README` + `.gitignore` + `ERROR_LOG.md` + `REVIEW.md` + `rules/commit-rules.md`（按档）+ `rules/dev-workflow-rules.md`（精简）+ `rules/doc-ssot-rules.md` + `02-design/test-spec/`（骨架）+ `02-design/doc-governance.md` + `ROADMAP.md` + `HANDOVER.md` + `ledger/bugs.md` + `ledger/archive/` + `superpowers/specs/` + 所选栈门禁 + `gitleaks`。
 
 ### 9.2 可选组件（一道多选）
 
@@ -298,6 +321,7 @@ docs/ledger/
 | 完整台账 | `ledger/debt.md`+`version-log.md` | `doc-governance.md` 台账刷新责任表加入对应行 |
 | 代码-文档同步检查 | `gates/doc-sync-check` 片段 | `lefthook.yml` pre-push 段加入 doc-sync |
 | 远端 pre-receive hook | `gates/pre-receive-remote/` | `commit-rules.md` 标注"远端强控" |
+| API 文档 | `02-design/api/api-reference.md.tmpl` | `AGENTS.md` 文档体系表加入 api-reference 行 |
 
 ### 9.3 版本派生规则（非独立开关）
 
@@ -358,9 +382,9 @@ docs/ledger/
 
 1. `00-charter/`（若选）：愿景/战略/护栏
 2. `02-design/system-architecture.md`（若选）：技术栈/架构骨架
-3. `03-roadmap/roadmap.md`：P0 首阶段门
+3. `ROADMAP.md`：P0 首阶段门
 4. `AGENTS.md` 仓库布局段：按所选栈形态填实际目录树
-5. `ledger/progress.md` 首条交接：本轮首做
+5. `HANDOVER.md` 首条交接：本轮首做 + 当前阶段门标注
 
 每节可跳过（留 TODO）。校验：占位符残留扫描；AGENTS.md 布局段与实际 `find` 目录一致。
 
@@ -477,7 +501,9 @@ tests/
 | 8 步研发流程 | TianQuan | `rules/dev-workflow-rules.md` |
 | 军规 A–J | CyberWork | `rules/agent-conduct-rules.md` |
 | 强制规则索引 | TianQuan | `AGENTS.md` 顶部索引表 |
-| 编号文档阅读顺序 | CyberWork | `docs/00-charter…03-roadmap/` |
+| 编号文档阅读顺序 | CyberWork | `docs/00-charter…02-design/` + 根级 `ROADMAP/HANDOVER` |
+| HANDOVER/ROADMAP 配对命名 | AWB + TianQuan | `docs/HANDOVER.md` + `docs/ROADMAP.md`（根，导航配对） |
+| API 文档（changelog+通用约定+每接口骨架） | AWB | `02-design/api/api-reference.md.tmpl`（可选组件） |
 | `rules/` 语义铁律 | TianQuan | `docs/rules/` |
 | lefthook 机器门禁 | CyberWork | `core/lefthook.yml.tmpl` + `gates/` |
 | cargo/npm 门禁 | TianQuan | `stacks/*/gate-fragment.yml.tmpl` |

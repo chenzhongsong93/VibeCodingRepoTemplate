@@ -37,9 +37,10 @@ VibeCodingRepoTemplate/
 │   │   ├── lefthook.yml.tmpl                 # baseline: gitleaks + commit-msg
 │   │   └── docs/
 │   │       ├── 02-design/test-spec/README.md.tmpl
-│   │       ├── 03-roadmap/roadmap.md.tmpl
+│   │       ├── ROADMAP.md.tmpl                 # 根，与 HANDOVER 配对
+│   │       ├── HANDOVER.md.tmpl                # 根，进展+交接，与 ROADMAP 配对
 │   │       ├── ledger/bugs.md.tmpl
-│   │       ├── ledger/progress.md.tmpl
+│   │       ├── ledger/archive/.gitkeep
 │   │       ├── rules/commit-rules.md.tmpl
 │   │       ├── rules/dev-workflow-rules.md.tmpl
 │   │       ├── rules/doc-ssot-rules.md.tmpl
@@ -358,9 +359,10 @@ These are the minimal必带 templates for the lightweight scenario. They use `{{
 - Create: `skills/init-code-repo/templates/core/.gitignore.tmpl`
 - Create: `skills/init-code-repo/templates/core/lefthook.yml.tmpl`
 - Create: `skills/init-code-repo/templates/core/docs/02-design/test-spec/README.md.tmpl`
-- Create: `skills/init-code-repo/templates/core/docs/03-roadmap/roadmap.md.tmpl`
+- Create: `skills/init-code-repo/templates/core/docs/ROADMAP.md.tmpl`
+- Create: `skills/init-code-repo/templates/core/docs/HANDOVER.md.tmpl`
 - Create: `skills/init-code-repo/templates/core/docs/ledger/bugs.md.tmpl`
-- Create: `skills/init-code-repo/templates/core/docs/ledger/progress.md.tmpl`
+- Create: `skills/init-code-repo/templates/core/docs/ledger/archive/.gitkeep`
 - Create: `skills/init-code-repo/templates/core/docs/rules/commit-rules.md.tmpl`
 - Create: `skills/init-code-repo/templates/core/docs/rules/dev-workflow-rules.md.tmpl`
 - Create: `skills/init-code-repo/templates/core/docs/rules/doc-ssot-rules.md.tmpl`
@@ -402,8 +404,9 @@ Create `skills/init-code-repo/templates/core/AGENTS.md.tmpl`:
 {{PROJECT_NAME}}/
 ├── docs/
 │   ├── 02-design/test-spec/   # 测试设计 SSOT
-│   ├── 03-roadmap/             # 路线图
-│   ├── ledger/                 # 累积型台账（bugs/progress<!--IF:full-ledger-->/debt/version-log<!--/IF:full-ledger-->）
+│   ├── ROADMAP.md              # 前瞻路线图（与 HANDOVER 配对）
+│   ├── HANDOVER.md             # 进展+交接（与 ROADMAP 配对）
+│   ├── ledger/                 # 累积型台账（bugs<!--IF:full-ledger-->/debt/version-log<!--/IF:full-ledger-->）
 │   ├── rules/                  # 强制规则
 │   └── superpowers/specs/      # 过程稿（非 SSOT）
 ├── AGENTS.md                   # 本文件
@@ -559,10 +562,16 @@ Note: `rust`/`node` conditions are stack-derived (later plan adds stacks); `comm
 Bug 与回归用例的链接关系见 [../../ledger/bugs.md](../../ledger/bugs.md)。
 ```
 
-- [ ] **Step 7: Create docs/03-roadmap/roadmap.md.tmpl**
+- [ ] **Step 7: Create docs/ROADMAP.md.tmpl**
 
 ```markdown
-# 路线图
+# ROADMAP — 路线图
+
+> 前瞻：要去哪。与 [HANDOVER.md](HANDOVER.md)（现状：走到哪）配对，每轮首读。
+
+## 当前阶段门
+
+（TODO: 标注当前所处阶段门，与 HANDOVER.md 一致）
 
 ## P0 — 首阶段门
 
@@ -600,12 +609,17 @@ Bug 与回归用例的链接关系见 [../../ledger/bugs.md](../../ledger/bugs.m
 （暂无 bug）
 ```
 
-- [ ] **Step 9: Create docs/ledger/progress.md.tmpl**
+- [ ] **Step 9: Create docs/HANDOVER.md.tmpl**
 
 ```markdown
-# 进展与交接
+# HANDOVER — 进展与交接
 
 > 累积型台账：每轮迭代第 7 步刷新，只追加"当前交接追加"段，历史段不回改。
+> 与 [ROADMAP.md](ROADMAP.md) 配对：下方"当前阶段门"须与 ROADMAP 一致，便于走偏自检。
+
+## 当前阶段门
+
+（TODO: 标注当前在 ROADMAP 的哪个阶段门，如 P0）
 
 ## 当前交接追加
 
@@ -654,7 +668,7 @@ type：feat/fix/docs/style/refactor/perf/test/chore。subject 中文祈使句，
 
 ## 步骤
 
-1. **读交接 + 仓结构核心文件**：[progress.md](../ledger/progress.md)、本 AGENTS.md、[roadmap.md](../roadmap/roadmap.md)。
+1. **读交接 + 仓结构核心文件**：[HANDOVER.md](../HANDOVER.md)、本 AGENTS.md、[ROADMAP.md](../ROADMAP.md)（确认当前阶段门 + 走偏自检）。
 2. **头脑风暴 + 需求分析设计**：用 `superpowers:brainstorming` 探索需求，产出 spec/plan 落 `docs/superpowers/specs/`。设本轮收口验收标准（可量化）。
 3. **整合测试设计**：建/更新 [test-spec](../02-design/test-spec/) SSOT。
 4. **TDD 驱动开发**：按 SSOT 写测试→红→实现→绿→代码检视。
@@ -678,7 +692,7 @@ type：feat/fix/docs/style/refactor/perf/test/chore。subject 中文祈使句，
 | 类别 | 性质 | 生命周期 | 例子 |
 |------|------|----------|------|
 | 正式 SSOT | 治理型真相源，变更走治理 | 被回刷维护 | `00-charter/`、`02-design/`、`rules/` |
-| 累积型台账 | 只增不删，归档=移至 `archive/` | 只增 | `ledger/bugs|progress|debt|version-log` |
+| 累积型台账 | 只增不删，归档=移至 `archive/` | 只增 | `HANDOVER.md`、`ledger/bugs|debt|version-log` |
 | 过程文档 | 非 SSOT，追溯用 | 可作废 | `superpowers/specs/` |
 
 冲突时以正式 SSOT 为准。累积 ≠ 过程文档：台账累积且是 SSOT。
@@ -687,7 +701,7 @@ type：feat/fix/docs/style/refactor/perf/test/chore。subject 中文祈使句，
 
 | 台账 | 时机 | 谁刷新 |
 |------|------|--------|
-| progress.md | 每轮第 7 步 | agent |
+| HANDOVER.md | 每轮第 7 步 | agent |
 | bugs.md | 发现+闭环时 | agent |
 <!--IF:full-ledger-->
 | debt.md | 引入规避+偿还时 | agent |
@@ -751,9 +765,9 @@ Create `tests/golden/lightweight/expected-tree.json` (sorted file list expected 
   ".gitignore",
   "lefthook.yml",
   "docs/02-design/test-spec/README.md",
-  "docs/03-roadmap/roadmap.md",
+  "docs/ROADMAP.md",
+  "docs/HANDOVER.md",
   "docs/ledger/bugs.md",
-  "docs/ledger/progress.md",
   "docs/rules/commit-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
@@ -1181,10 +1195,10 @@ Modify `tests/golden/lightweight/expected-tree.json` — add `"docs/ledger/archi
   ".gitignore",
   "lefthook.yml",
   "docs/02-design/test-spec/README.md",
-  "docs/03-roadmap/roadmap.md",
+  "docs/ROADMAP.md",
+  "docs/HANDOVER.md",
   "docs/ledger/archive/.gitkeep",
   "docs/ledger/bugs.md",
-  "docs/ledger/progress.md",
   "docs/rules/commit-rules.md",
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
