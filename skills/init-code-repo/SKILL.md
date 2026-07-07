@@ -71,6 +71,8 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 
 **末尾主动引导 fill-design-doc**：阶段 5 末尾，列出当前残留 TODO 清单（按文档归类），询问用户"是否现在用 fill-design-doc skill 逐节填充？"。用户同意 → 调用 `fill-design-doc` skill 逐文档处理；用户拒绝 → 在 HANDOVER.md 记录"待填充 TODO 列表"作为下轮首做。这闭环 init→fill，避免 TODO 被遗忘。
 
+**提示 scaffold-code**：设计文档（尤其 system-architecture.md 构建块视图）填完后，提示用户"可用 scaffold-code skill 跑原生脚手架（cargo new/npm create/mvn 等）生成代码骨架，按设计拆模块"。scaffold-code 是独立 skill，与 fill-design-doc 配套。时序：init-code-repo → fill-design-doc → scaffold-code。
+
 
 ---
 
