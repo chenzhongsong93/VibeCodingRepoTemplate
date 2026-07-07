@@ -403,3 +403,48 @@ test('init-code-repo SKILL.md引导 dev-conductor (not fill-design-doc/scaffold-
   assertOk(!skill.includes('fill-design-doc'), 'init-code-repo no longer references fill-design-doc');
   assertOk(!skill.includes('scaffold-code'), 'init-code-repo no longer references scaffold-code');
 });
+
+test('zh-naming: file tree matches golden', () => {
+  const tmp = '/tmp/init-code-repo-test-zh';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/zh-naming/config.json', 'utf8')));
+  const actual = fileTree(tmp);
+  const expected = JSON.parse(readFileSync('tests/golden/zh-naming/expected-tree.json', 'utf8'));
+  assertTreeEqual(actual, expected, 'zh-naming tree');
+});
+
+test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
+  const tmp = '/tmp/init-code-repo-test-zh-content';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/zh-naming/config.json', 'utf8')));
+  const tree = fileTree(tmp);
+  // Chinese doc names
+  assertOk(tree.includes('docs/路线图.md'), '路线图.md');
+  assertOk(tree.includes('docs/交接.md'), '交接.md');
+  assertOk(tree.includes('docs/rules/研发流程规则.md'), '研发流程规则.md');
+  assertOk(tree.includes('docs/02-design/系统架构.md'), '系统架构.md');
+  assertOk(tree.includes('docs/02-design/北极星.md'), '北极星.md');
+  assertOk(tree.includes('docs/02-design/api/接口文档.md'), '接口文档.md');
+  assertOk(tree.includes('docs/rules/Agent行为军规.md'), 'Agent行为军规.md');
+  assertOk(tree.includes('docs/ledger/bug台账.md'), 'bug台账.md');
+  // tooling-fixed English
+  assertOk(tree.includes('AGENTS.md') && tree.includes('CLAUDE.md') && tree.includes('README.md'), 'tooling-fixed English');
+  assertOk(tree.includes('lefthook.yml'), 'lefthook.yml English');
+  // no leftover placeholders
+  const agents = readFileSync(`${tmp}/AGENTS.md`, 'utf8');
+  assertOk(!agents.includes('{{FILE:'), 'no {{FILE: leftover');
+  assertOk(agents.includes('](docs/rules/研发流程规则.md)'), 'AGENTS link uses Chinese path');
+  // charter 章程.md relative link to 概念.md
+  const charter = readFileSync(`${tmp}/docs/00-charter/章程.md`, 'utf8');
+  assertOk(charter.includes('](概念.md)'), 'charter relative link Chinese');
+  // check-completeness.mjs shipped with Chinese MAPPING paths + runs
+  const cc = readFileSync(`${tmp}/scripts/check-completeness.mjs`, 'utf8');
+  assertOk(cc.includes('docs/00-charter/概念.md'), 'check-completeness MAPPING has Chinese path');
+  assertOk(!cc.includes('{{FPATH:'), 'no {{FPATH: leftover in shipped script');
+  const r = spawnSync('node', [`${tmp}/scripts/check-completeness.mjs`, '--stage', 'P0', '--root', tmp]);
+  assertOk(r.status === 1, 'zh check-completeness exits 1 on TODO residue');
+  assertOk(String(r.stderr).includes('概念.md') || String(r.stderr).includes('北极星.md'), 'zh stderr mentions Chinese doc');
+  // dead-link check
+  const dead = deadLinks(tmp);
+  assert.equal(dead.length, 0, `zh dead links:\n${dead.map(d => '  ' + d.file + ' -> ' + d.link).join('\n')}`);
+});

@@ -30,6 +30,7 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 | 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |
 | 远端托管 | gitcode / github / gitlab / 无 | remote=none 时无 remote-hook；否则有 |
 | Commit 门禁档 | 默认正则 / 自定义正则 / 不要求 | 决定 commit-msg 段 |
+| 文档命名 | 英文 / 中文 / 自定义 | 决定文档文件名风格（工具契约文件 AGENTS.md/CLAUDE.md/README.md/lefthook.yml 等恒英文；docs/ 下文档与 ROADMAP/HANDOVER 等可中文/自定义）|
 | 可选组件 | 多选（见下表） | 决定装配范围与版本派生 |
 
 校验：必答项齐全；主栈与仓形态自洽。
@@ -88,6 +89,16 @@ agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目
 | `{{COMMIT_REGEX}}` | commitRegex | commit 档为 custom 时的用户正则；否则不出现 |
 
 未知占位符保持不变。
+
+### 1.5 文件名映射（命名风格）
+
+按 `naming`（en/zh/custom）映射文档文件名。工具契约文件（AGENTS.md/CLAUDE.md/README.md/lefthook.yml/package.json/Makefile 等）恒不映射。
+
+- 模板内 markdown 链接 `{{FILE:path}}`：按映射替换为目标文件名，并相对当前文件目录相对化（用于链接）。
+- 模板内绝对路径 `{{FPATH:path}}`：按映射替换，不相对化（用于脚本 MAPPING 与 inline code 路径）。
+- 输出文件名：模板文件名按映射重命名（如 `dev-workflow-rules.md` → `研发流程规则.md`）。
+
+zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径 → 自定义文件名）覆盖 zh/en 基线。
 
 ### 2. 条件块剥离（`<!--IF:cond-->`）
 

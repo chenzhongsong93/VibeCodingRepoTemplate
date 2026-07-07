@@ -1,0 +1,12 @@
+{
+  "projectName": "演示项目",
+  "oneLine": "中文命名演示",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["product-docs", "agent-conduct", "api-docs", "full-ledger"],
+  "naming": "zh"
+}

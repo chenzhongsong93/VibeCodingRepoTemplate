@@ -11,14 +11,14 @@ const stageIdx = process.argv.indexOf('--stage');
 const stage = stageIdx >= 0 ? process.argv[stageIdx + 1] : readStageFromHandover(ROOT);
 
 const MAPPING = {
-  P0: ['docs/00-charter/concept.md', 'docs/00-charter/guardrails.md', 'docs/00-charter/vision-strategy.md', 'docs/02-design/north-star.md', 'docs/ROADMAP.md'],
-  P1: ['docs/02-design/system-architecture.md', 'docs/02-design/entity-model.md', 'docs/02-design/api/api-reference.md'],
-  P2: ['docs/02-design/ui-design/README.md', 'docs/02-design/test-spec/README.md'],
-  P3: ['docs/ledger/debt.md'],
+  P0: ['{{FPATH:docs/00-charter/concept.md}}', '{{FPATH:docs/00-charter/guardrails.md}}', '{{FPATH:docs/00-charter/vision-strategy.md}}', '{{FPATH:docs/02-design/north-star.md}}', '{{FPATH:docs/ROADMAP.md}}'],
+  P1: ['{{FPATH:docs/02-design/system-architecture.md}}', '{{FPATH:docs/02-design/entity-model.md}}', '{{FPATH:docs/02-design/api/api-reference.md}}'],
+  P2: ['{{FPATH:docs/02-design/ui-design/README.md}}', '{{FPATH:docs/02-design/test-spec/README.md}}'],
+  P3: ['{{FPATH:docs/ledger/debt.md}}'],
 };
 
 function readStageFromHandover(root) {
-  const p = join(root, 'docs/HANDOVER.md');
+  const p = join(root, '{{FPATH:docs/HANDOVER.md}}');
   if (!existsSync(p)) return 'P0';
   const t = readFileSync(p, 'utf8');
   const m = t.match(/当前阶段门[\s\S]{0,40}(P[0-3])/);
