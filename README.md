@@ -22,8 +22,7 @@ skill 安装内容 = `skills/init-code-repo/`（`SKILL.md` + `templates/`）。�
 调用时 agent 读 `SKILL.md`，按"手动装配规则"从 `templates/` 装配，零运行时依赖。选 Claude Code runtime 时附带 `.claude/settings.json`；其他 runtime 直读 `AGENTS.md`，无额外文件。
 
 配套 skills（与 init-code-repo 一起装）：
-- `fill-design-doc`：逐节填充设计文档 TODO。
-- `scaffold-code`：用原生脚手架生成代码骨架，按设计拆模块。
+- `dev-conductor`：按骨架+规范驱动 superpowers 走完"设计→落地"（brainstorming 填文档 + writing-plans/executing-plans/TDD 写代码）。
 
 ## 开发本仓（维护者，需 Node.js 22）
 
