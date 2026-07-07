@@ -392,3 +392,20 @@ test('check-completeness.mjs: shipped to generated repo + flags TODO residue', (
   const err = String(r.stderr);
   assertOk(err.includes('concept.md') || err.includes('north-star.md'), 'stderr mentions a TODO-bearing doc');
 });
+
+test('scaffold-code: SKILL.md exists and documents native scaffolding', () => {
+  const skill = readFileSync('skills/scaffold-code/SKILL.md', 'utf8');
+  assertOk(skill.startsWith('---\nname: scaffold-code'), 'scaffold-code frontmatter');
+  assertOk(skill.includes('cargo new'), 'documents rust native scaffold');
+  assertOk(skill.includes('npm create'), 'documents node native scaffold');
+  assertOk(skill.includes('mvn archetype'), 'documents java maven scaffold');
+  assertOk(skill.includes('go mod init'), 'documents go native scaffold');
+  assertOk(skill.includes('构建块视图'), 'reads system-architecture to split modules');
+  assertOk(skill.includes('lefthook install'), 'wires gates');
+  assertOk(skill.includes('回刷'), 'refreshes AGENTS layout');
+});
+
+test('init-code-repo SKILL.md mentions scaffold-code', () => {
+  const skill = readFileSync('skills/init-code-repo/SKILL.md', 'utf8');
+  assertOk(skill.includes('scaffold-code'), 'init-code-repo references scaffold-code');
+});
