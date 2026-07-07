@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { join, dirname } from 'node:path';
 import { substitute } from './substitute.mjs';
 import { activeConds, stripConditionals } from './conditional.mjs';
+import { buildMap, mapPath, substituteFiles, substituteFilePaths } from './naming.mjs';
 
 const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
 
@@ -27,7 +28,7 @@ function extraConds(config) {
   return conds;
 }
 
-function writeTree(srcDir, targetDir, ctx, activeSet) {
+function writeTree(srcDir, targetDir, ctx, activeSet, map) {
   if (!existsSync(srcDir)) return;
   for (const abs of walk(srcDir)) {
     const rel = abs.slice(srcDir.length + 1).replace(/\\/g, '/');
@@ -38,9 +39,13 @@ function writeTree(srcDir, targetDir, ctx, activeSet) {
       content = content.slice(req[0].length);
     }
     content = substitute(content, ctx);
-    content = stripConditionals(content, [...activeSet]);
+    content = substituteFilePaths(content, map);
     const outRel = rel.replace(/\.tmpl$/, '');
-    const outPath = join(targetDir, outRel);
+    const currentDir = outRel.includes('/') ? outRel.slice(0, outRel.lastIndexOf('/')) : '';
+    content = substituteFiles(content, map, currentDir);
+    content = stripConditionals(content, [...activeSet]);
+    const outRelMapped = mapPath(outRel, map);
+    const outPath = join(targetDir, outRelMapped);
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, content);
   }
@@ -55,16 +60,17 @@ export function assemble(targetDir, config) {
   };
   const conds = [...activeConds(config), ...extraConds(config)];
   const activeSet = new Set(conds);
+  const map = buildMap(config.naming, config.namingCustom || {});
   const root = 'skills/init-code-repo/templates';
-  writeTree(join(root, 'core'), targetDir, ctx, activeSet);
-  if (config.repoRole === 'central-docs') {
-    writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet);
-  }
+  writeTree(join(root, 'core'), targetDir, ctx, activeSet, map);
   for (const stack of config.stacks || []) {
-    writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet);
+    writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet, map);
   }
-  writeTree(join(root, 'gates'), targetDir, ctx, activeSet);
+  writeTree(join(root, 'gates'), targetDir, ctx, activeSet, map);
+  if (config.repoRole === 'central-docs') {
+    writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet, map);
+  }
   for (const runtime of config.runtimes || []) {
-    writeTree(join(root, 'runtime-adapters', runtime), targetDir, ctx, activeSet);
+    writeTree(join(root, 'runtime-adapters', runtime), targetDir, ctx, activeSet, map);
   }
 }
