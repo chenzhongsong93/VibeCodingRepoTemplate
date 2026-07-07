@@ -1,7 +1,7 @@
 <!--require:three-tier-test-->
 # 测试规则（三层）
 
-> 与 [dev-workflow-rules.md]({{FILE:dev-workflow-rules.md}}) 互补：本文件定各层标准，那一份定流程顺序。
+> 与 [{{FNAME:docs/rules/dev-workflow-rules.md}}]({{FILE:dev-workflow-rules.md}}) 互补：本文件定各层标准，那一份定流程顺序。
 
 ## 三层定义
 
@@ -13,12 +13,12 @@
 
 ## 测试 SSOT
 
-用例设计在 [02-design/test-spec/]({{FILE:../02-design/test-spec/}})，按"因子分析→场景矩阵→分支覆盖表→用例清单"组织。每条用例标注覆盖的 SSOT 节：`// 覆盖:§<节> <用例 ID>`。
+用例设计在 [02-design/{{FNAME:docs/02-design/test-spec}}/]({{FILE:../02-design/test-spec/}})，按"因子分析→场景矩阵→分支覆盖表→用例清单"组织。每条用例标注覆盖的 SSOT 节：`// 覆盖:§<节> <用例 ID>`。
 
 ## 一致性铁律
 - SSOT 每格至少一条用例；每用例必有 SSOT 格。
 - SSOT 与用例不一致 = 构建阻断。
-- 闭环 bug 必有对应回归用例（见 [ledger/bugs.md]({{FILE:../ledger/bugs.md}})）。
+- 闭环 bug 必有对应回归用例（见 [ledger/{{FNAME:docs/ledger/bugs.md}}]({{FILE:../ledger/bugs.md}})）。
 
 ## 覆盖要求
 - 核心逻辑 L1 覆盖。
