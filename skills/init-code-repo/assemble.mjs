@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { join, dirname } from 'node:path';
 import { substitute } from './substitute.mjs';
 import { activeConds, stripConditionals } from './conditional.mjs';
-import { buildMap, mapPath, substituteFiles, substituteFilePaths } from './naming.mjs';
+import { buildMap, mapPath, substituteFiles, substituteFilePaths, substituteFileNames } from './naming.mjs';
 
 const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
 
@@ -40,6 +40,7 @@ function writeTree(srcDir, targetDir, ctx, activeSet, map) {
     }
     content = substitute(content, ctx);
     content = substituteFilePaths(content, map);
+    content = substituteFileNames(content, map);
     const outRel = rel.replace(/\.tmpl$/, '');
     const currentDir = outRel.includes('/') ? outRel.slice(0, outRel.lastIndexOf('/')) : '';
     content = substituteFiles(content, map, currentDir);

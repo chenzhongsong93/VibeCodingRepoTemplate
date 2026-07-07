@@ -28,10 +28,10 @@ lint/test 门禁必须通过。`--no-verify` 跳过 hook 视为违规（除非�
 架构图用 Mermaid/PlantUML。复杂流程必配图，图与文字描述一致。
 
 ## H. 技术债务（临时规避必登记）
-任何临时规避/走捷径，必须在 <!--IF:full-ledger-->[ledger/debt.md]({{FILE:../ledger/debt.md}})<!--ELSE-->`ledger/debt.md`（需启用完整台账组件）<!--/IF:full-ledger--> 登记，含原因 + 偿还条件。未登记的债务视为违规。
+任何临时规避/走捷径，必须在 <!--IF:full-ledger-->[ledger/debt.md]({{FILE:../ledger/debt.md}})<!--ELSE-->`ledger/{{FNAME:docs/ledger/debt.md}}`（需启用完整台账组件）<!--/IF:full-ledger--> 登记，含原因 + 偿还条件。未登记的债务视为违规。
 
 ## I. 接口/DB/实体回刷
-接口、DB schema、实体模型变更，必须同步回刷 `02-design/api/`、`02-design/entity-model.md`（若存在）。
+接口、DB schema、实体模型变更，必须同步回刷 `02-design/api/`、`02-design/{{FNAME:docs/02-design/entity-model.md}}`（若存在）。
 
 ## J. 变更即审视回刷（总一致性）
 凡需求、代码或文档更新，必须审视是否需回刷：引用路径、设计说明书章节、ADR、功能设计、UI 设计、路线图、术语表。变更提交前完成回刷，不留"回头补"；无法当场回刷的，在变更说明标注"待回刷"。

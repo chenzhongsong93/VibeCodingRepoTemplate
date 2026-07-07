@@ -88,3 +88,14 @@ export function substituteFiles(text, map, currentDir) {
 export function substituteFilePaths(text, map) {
   return text.replace(/\{\{FPATH:([^}]+)\}\}/g, (m, p) => mapPath(p.trim(), map));
 }
+
+// Substitute {{FNAME:repo-root-relative-path}} → mapped basename only (preserves surrounding dir context).
+// en (empty map): basename of the path = original basename → identity.
+// zh: mapped Chinese basename. Use for inline code / code-block paths where dir stays English.
+export function substituteFileNames(text, map) {
+  return text.replace(/\{\{FNAME:([^}]+)\}\}/g, (m, p) => {
+    const rel = p.trim();
+    if (map[rel]) return map[rel];
+    return rel.split('/').pop();
+  });
+}
