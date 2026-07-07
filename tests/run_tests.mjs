@@ -371,14 +371,6 @@ test('deadLinks: scans .html <a href>', () => {
   assertOk(!dead.some(d => d.link.startsWith('https://') || d.link.startsWith('#')), 'ext/anchor ignored');
 });
 
-test('fill-design-doc: SKILL.md exists and documents guided fill', () => {
-  const skill = readFileSync('skills/fill-design-doc/SKILL.md', 'utf8');
-  assertOk(skill.startsWith('---\nname: fill-design-doc'), 'fill skill frontmatter');
-  assertOk(skill.includes('逐节追问'), 'fill skill guided Q&A');
-  assertOk(skill.includes('起草该节'), 'fill skill drafts from answers');
-  assertOk(skill.includes('完整性门控'), 'fill skill triggers completeness');
-});
-
 test('check-completeness.mjs: shipped to generated repo + flags TODO residue', () => {
   // assemble full-product (has product-docs → charter/north-star with TODO residue)
   const tmp = '/tmp/init-code-repo-test-completeness';
@@ -393,19 +385,21 @@ test('check-completeness.mjs: shipped to generated repo + flags TODO residue', (
   assertOk(err.includes('concept.md') || err.includes('north-star.md'), 'stderr mentions a TODO-bearing doc');
 });
 
-test('scaffold-code: SKILL.md exists and documents native scaffolding', () => {
-  const skill = readFileSync('skills/scaffold-code/SKILL.md', 'utf8');
-  assertOk(skill.startsWith('---\nname: scaffold-code'), 'scaffold-code frontmatter');
-  assertOk(skill.includes('cargo new'), 'documents rust native scaffold');
-  assertOk(skill.includes('npm create'), 'documents node native scaffold');
-  assertOk(skill.includes('mvn archetype'), 'documents java maven scaffold');
-  assertOk(skill.includes('go mod init'), 'documents go native scaffold');
+test('dev-conductor: SKILL.md exists and orchestrates superpowers', () => {
+  const skill = readFileSync('skills/dev-conductor/SKILL.md', 'utf8');
+  assertOk(skill.startsWith('---\nname: dev-conductor'), 'dev-conductor frontmatter');
+  assertOk(skill.includes('superpowers:brainstorming'), 'drives brainstorming for docs');
+  assertOk(skill.includes('superpowers:writing-plans'), 'drives writing-plans for code');
+  assertOk(skill.includes('executing-plans'), 'drives executing-plans');
+  assertOk(skill.includes('完整性门控'), 'reads completeness gate');
   assertOk(skill.includes('构建块视图'), 'reads system-architecture to split modules');
-  assertOk(skill.includes('lefthook install'), 'wires gates');
-  assertOk(skill.includes('回刷'), 'refreshes AGENTS layout');
+  assertOk(skill.includes('cargo new') || skill.includes('npm create'), 'native scaffolding');
+  assertOk(skill.includes('不写文档/代码') || skill.includes('不自己写代码'), 'does not write code itself');
 });
 
-test('init-code-repo SKILL.md mentions scaffold-code', () => {
+test('init-code-repo SKILL.md引导 dev-conductor (not fill-design-doc/scaffold-code)', () => {
   const skill = readFileSync('skills/init-code-repo/SKILL.md', 'utf8');
-  assertOk(skill.includes('scaffold-code'), 'init-code-repo references scaffold-code');
+  assertOk(skill.includes('dev-conductor'), 'init-code-repo references dev-conductor');
+  assertOk(!skill.includes('fill-design-doc'), 'init-code-repo no longer references fill-design-doc');
+  assertOk(!skill.includes('scaffold-code'), 'init-code-repo no longer references scaffold-code');
 });
