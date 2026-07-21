@@ -34,7 +34,7 @@ commit-msg:
     conventional-commit:
       run: |
         msg=$(cat {1})
-        echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#\d+$' \
+        echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore)\([^)]+\): .+\s#\d+$' \
           || { echo "❌ 提交信息不符: type(scope): subject #issue"; exit 1; }
 <!--/IF:commit-default-->
 <!--IF:commit-custom-->
