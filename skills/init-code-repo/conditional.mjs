@@ -7,21 +7,56 @@ export function activeConds(config) {
   return [...set];
 }
 
+// Match a conditional marker, capturing its kind and cond.
+// Consumes the marker AND one trailing newline (so stripped blocks leave no
+// dangling blank line; kept content is never modified).
+const MARKER_RE = /<!--(IF:([\w-]+)|ELSE|\/IF:([\w-]+))-->\n?/g;
+
 function stripOnce(text, activeSet) {
-  // IF/ELSE blocks first. \n? after each marker consumes the marker's own
-  // trailing newline so stripped blocks leave no dangling blank line and
-  // kept content (including paragraph breaks) is never modified.
-  let out = text.replace(
-    /<!--IF:([\w-]+)-->\n?([\s\S]*?)<!--ELSE-->\n?([\s\S]*?)<!--\/IF:\1-->\n?/g,
-    (m, cond, ifBody, elseBody) =>
-      activeSet.has(cond) ? ifBody : elseBody
-  );
-  // IF-only blocks
-  out = out.replace(
-    /<!--IF:([\w-]+)-->\n?([\s\S]*?)<!--\/IF:\1-->\n?/g,
-    (m, cond, body) => (activeSet.has(cond) ? body : '')
-  );
-  return out;
+  // Stack-based parser: handles arbitrary nesting of IF/ELSE and IF-only
+  // blocks in a single pass. The previous single-regex approach mis-paired
+  // an outer IF/ELSE whose IF-body contained a nested IF/ELSE (the non-greedy
+  // `<!--ELSE-->` match grabbed the inner ELSE). Tokenizing + tree building
+  // makes pairing unambiguous.
+  // Root frame: ifBody collects top-level text.
+  const root = { ifBody: '', elseBody: '', hasElse: false, cond: null, parent: null };
+  let frame = root;
+  let last = 0; // index of last consumed char in text
+
+  for (const m of text.matchAll(MARKER_RE)) {
+    const token = m[0];
+    const ifCond = m[2];
+    const closeCond = m[3];
+    // text between last marker and this one belongs to current branch buffer
+    if (frame.hasElse) frame.elseBody += text.slice(last, m.index);
+    else frame.ifBody += text.slice(last, m.index);
+    last = m.index + token.length;
+
+    if (ifCond) {
+      // <!--IF:cond--> : push new frame
+      const child = { ifBody: '', elseBody: '', hasElse: false, cond: ifCond, parent: frame };
+      frame = child;
+    } else if (m[1] === 'ELSE' && frame.cond) {
+      frame.hasElse = true;
+    } else if (closeCond && frame.cond === closeCond) {
+      // <!--/IF:cond--> : resolve and pop
+      const resolved = activeSet.has(frame.cond)
+        ? frame.ifBody
+        : (frame.hasElse ? frame.elseBody : '');
+      frame = frame.parent;
+      if (frame.hasElse) frame.elseBody += resolved;
+      else frame.ifBody += resolved;
+    } else {
+      // Unmatched marker (stray <!--ELSE--> or </IF> with no open):
+      // treat as literal text to avoid silent data loss.
+      if (frame.hasElse) frame.elseBody += token;
+      else frame.ifBody += token;
+    }
+  }
+  // trailing text after last marker
+  if (frame.hasElse) frame.elseBody += text.slice(last);
+  else frame.ifBody += text.slice(last);
+  return root.ifBody;
 }
 
 export function stripConditionals(text, active) {

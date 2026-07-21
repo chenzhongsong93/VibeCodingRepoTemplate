@@ -413,6 +413,25 @@ test('zh-naming: file tree matches golden', () => {
   assertTreeEqual(actual, expected, 'zh-naming tree');
 });
 
+test('agent-policy: dev-workflow-rules governance vs slim', () => {
+  const baseCfg = { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] };
+  const tmpSlim = '/tmp/init-code-repo-test-ap-slim';
+  rmSync(tmpSlim, { recursive: true, force: true });
+  assemble(tmpSlim, baseCfg);
+  const dwSlim = readFileSync(`${tmpSlim}/docs/rules/dev-workflow-rules.md`, 'utf8');
+  assertOk(!dwSlim.includes('T0–T3 公共风险分级'), 'slim no T0-T3 table');
+  assertClean(dwSlim, 'slim dev-workflow');
+
+  const tmpGov = '/tmp/init-code-repo-test-ap-gov';
+  rmSync(tmpGov, { recursive: true, force: true });
+  assemble(tmpGov, { ...baseCfg, components:['agent-policy'], branchModel:{dev:'dev_mvp'} });
+  const dwGov = readFileSync(`${tmpGov}/docs/rules/dev-workflow-rules.md`, 'utf8');
+  assertOk(dwGov.includes('T0–T3 公共风险分级'), 'gov has T0-T3 table');
+  assertOk(!dwGov.includes('{{DEV_BRANCH}}'), 'DEV_BRANCH substituted');
+  assertOk(dwGov.includes('dev_mvp'), 'branch var substituted to dev_mvp');
+  assertClean(dwGov, 'gov dev-workflow');
+});
+
 test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
   const tmp = '/tmp/init-code-repo-test-zh-content';
   rmSync(tmp, { recursive: true, force: true });
