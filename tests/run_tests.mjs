@@ -612,6 +612,15 @@ test('dev-flow-skills: thin adapters under .claude/skills', () => {
   assertOk(!fileTree(tmp2).some(f => f.startsWith('.claude/skills/')), 'no thin adapter without claude-code runtime');
 });
 
+test('dev-flow-skills: check-test-spec-consistency shipped', () => {
+  const tmp = '/tmp/init-code-repo-test-tspec-consistency';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  assertOk(fileTree(tmp).includes('scripts/check-test-spec-consistency.mjs'), 'consistency script shipped');
+  const r = spawnSync('node', [`${tmp}/scripts/check-test-spec-consistency.mjs`, tmp]);
+  assert.equal(r.status, 0, 'skip when no test-spec dir');
+});
+
 test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
   const tmp = '/tmp/init-code-repo-test-zh-content';
   rmSync(tmp, { recursive: true, force: true });

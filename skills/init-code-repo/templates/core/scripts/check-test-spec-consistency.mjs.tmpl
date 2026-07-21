@@ -1,0 +1,42 @@
+<!--require:dev-flow-skills-->
+#!/usr/bin/env node
+// check-test-spec-consistency.mjs — SSOT 用例ID集合 vs 代码标签集合，1:1 零差异。
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+const root = process.argv[2] || '.';
+const specDir = join(root, 'docs/02-design/test-spec');
+if (!existsSync(specDir)) { console.log('skip: no test-spec dir'); process.exit(0); }
+
+const idRe = /L[12]-[A-Z0-9]+-[0-9]+/g;
+const codeExts = ['.rs', '.ts', '.tsx', '.js', '.jsx', '.go', '.py'];
+
+function collectIds(dir, exts) {
+  const ids = new Set();
+  if (!existsSync(dir)) return ids;
+  const walk = (d) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const full = join(d, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (exts.some(ext => e.name.endsWith(ext))) {
+        const m = readFileSync(full, 'utf8').match(idRe) || [];
+        m.forEach(x => ids.add(x));
+      }
+    }
+  };
+  walk(dir);
+  return ids;
+}
+
+const specIds = collectIds(specDir, ['.md']);
+const codeIds = new Set();
+for (const d of ['tests', 'src']) for (const id of collectIds(join(root, d), codeExts)) codeIds.add(id);
+
+const specArr = [...specIds].sort();
+const codeArr = [...codeIds].sort();
+const same = specArr.length === codeArr.length && specArr.every((v, i) => v === codeArr[i]);
+if (same) { console.log('✓ 1:1 零差异'); process.exit(0); }
+console.error('❌ 不一致，构建阻断');
+console.error('--- SSOT ---\n' + specArr.join('\n'));
+console.error('--- 代码 ---\n' + codeArr.join('\n'));
+process.exit(1);
