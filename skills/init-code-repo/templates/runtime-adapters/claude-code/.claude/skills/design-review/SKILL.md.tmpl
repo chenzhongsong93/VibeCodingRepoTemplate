@@ -1,0 +1,23 @@
+<!--require:dev-flow-skills-->
+---
+name: design-review
+description: 检视仓内设计方案/过程稿/ADR/Spec 时使用。覆盖总体方案与跨仓配套稿，按"问题非风险 + 长短期非抛弃 + 4+1 视图"三原则与"横切维度 + 分层"框架深度检视，产出评审意见主文档。当用户要求评审/检视/审视某个方案、spec、过程稿、ADR，或说"看一下这个设计有没有问题"时触发。
+---
+
+# design-review（Claude Code 入口适配器）
+
+> 本 skill 是 Claude Code 的最薄入口。**方法论 SSOT 见** [docs/skills/design-review/SKILL.md](../../../docs/skills/design-review/SKILL.md)，触发后先读它再执行。本文件不复制方法论正文（避免漂移）。
+> Codex/OpenCode/zcode 等不经本 skill，直接经 `AGENTS.md` 指针读同一份 SSOT。
+
+## 触发后执行步骤
+
+1. 读 SSOT：`docs/skills/design-review/SKILL.md`（三铁律 + 7 维度 × 4 层框架 + 项目锚点 + 流程 + 红旗）。
+2. 按 SSOT §4 流程执行检视：读 SSOT 上下文（system-architecture.md/ADR/HANDOVER）→ 按维度×分层登记 → 根因簇收敛 → 预案登记（非决定）→ 驳回风险项 → 严重等级 → 产出主文档。
+3. 输出文件命名按 SSOT §7，落在 `docs/superpowers/specs/`。
+4. 提交遵 SSOT §4.9（commit 正则 + gitleaks + `{{VERIFY_FAST_CMD}}`）。
+
+## 不做什么
+
+- 不复制方法论正文到本文件（改 SSOT 即可，本文件无需同步）。
+- 不在检视阶段修复方案/代码——只登记问题与预案。
+- 不把风险当问题报、不规定必用某标准、不逐个补洞而不查 4+1 根因（SSOT §1、§6 红旗）。

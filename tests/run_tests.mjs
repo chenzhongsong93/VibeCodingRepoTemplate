@@ -588,6 +588,30 @@ test('dev-flow-skills: three SSOT + agent-policy auto-activated', () => {
   assertClean(dr, 'design-review SSOT');
 });
 
+test('dev-flow-skills: thin adapters under .claude/skills', () => {
+  const tmp = '/tmp/init-code-repo-test-thin-adapters';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('.claude/skills/dev-flow/SKILL.md'), 'dev-flow thin adapter');
+  assertOk(tree.includes('.claude/skills/test-spec/SKILL.md'), 'test-spec thin adapter');
+  assertOk(tree.includes('.claude/skills/design-review/SKILL.md'), 'design-review thin adapter');
+  const t = readFileSync(`${tmp}/.claude/skills/dev-flow/SKILL.md`, 'utf8');
+  assertOk(t.includes('docs/skills/dev-flow/SKILL.md'), 'thin adapter points to SSOT');
+  assertClean(t, 'thin adapter');
+  // each adapter points to its own SSOT + no baiwang
+  for (const sk of ['test-spec', 'design-review']) {
+    const c = readFileSync(`${tmp}/.claude/skills/${sk}/SKILL.md`, 'utf8');
+    assertOk(c.includes(`docs/skills/${sk}/SKILL.md`), `${sk} adapter points to SSOT`);
+    assertOk(!c.includes('baiwang'), `${sk} adapter no baiwang`);
+    assertClean(c, `${sk} adapter`);
+  }
+  const tmp2 = '/tmp/init-code-repo-test-thin-no-cc';
+  rmSync(tmp2, { recursive: true, force: true });
+  assemble(tmp2, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  assertOk(!fileTree(tmp2).some(f => f.startsWith('.claude/skills/')), 'no thin adapter without claude-code runtime');
+});
+
 test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
   const tmp = '/tmp/init-code-repo-test-zh-content';
   rmSync(tmp, { recursive: true, force: true });

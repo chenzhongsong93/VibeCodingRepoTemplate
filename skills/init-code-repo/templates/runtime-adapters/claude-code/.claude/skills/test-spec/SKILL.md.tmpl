@@ -1,0 +1,20 @@
+<!--require:dev-flow-skills-->
+---
+name: test-spec
+description: 写任何测试代码前必用。引导六步 test-spec 设计（因子分析→场景矩阵→边界值分析→异常场景分析→分支覆盖表→用例清单），1:1 用例ID↔测试函数标签铁律，L1/L2/L3 层级定义，L2 禁 mock 铁律，一致性校验。用于设计新测试或补边界/异常用例。
+---
+
+# test-spec（Claude Code 入口适配器）
+
+> 本 skill 是 Claude Code 最薄入口。**方法论 SSOT 见** [docs/skills/test-spec/SKILL.md](../../../docs/skills/test-spec/SKILL.md)，触发后先读它再执行。本文件不复制正文（避免漂移）。
+> Codex/OpenCode/zcode 等不经本 skill，直接经 AGENTS.md 指针读同一 SSOT。
+
+## 触发后
+
+1. 读 SSOT：`docs/skills/test-spec/SKILL.md`（六步方法论 + 1:1 铁律 + L1/L2/L3 + 一致性校验）。
+2. 按 SSOT 执行：产出 test-spec 文档到 `docs/02-design/test-spec/<NN-feature>.md`，写测试加 `// 覆盖:<SSOT节> <用例ID>` 标签，跑一致性校验。
+
+## 不做什么
+
+- 不复制 SSOT 正文到本文件（改 SSOT 即可，本文件无需同步）。
+- 不跳过 test-spec 设计直接写测试代码（铁律：设计先于写码）。
