@@ -7,8 +7,8 @@ set -euo pipefail
 
 : "${HOME:?HOME 未设置,无法定位用户级 skill 目录}"
 
-# 探测中央 docs 仓路径:环境变量 > 脚本自身所在目录(../..)
-# 脚本位于 <docs 仓>/scripts/install-skills.sh,向上两级到 docs 仓根。
+# 探测中央 docs 仓路径:环境变量 > 脚本自身所在目录(..)
+# 脚本位于 <docs 仓>/scripts/install-skills.sh,向上一级到 docs 仓根。
 # readlink -f 解末端符号链接(脚本经 symlink 调用时定位真实源),再用 -P 物理解析目录
 SELF="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(cd -P "$(dirname "$SELF")" && pwd -P)"

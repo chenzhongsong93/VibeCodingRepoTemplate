@@ -128,7 +128,7 @@ zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径
 
 激活集 = 选中组件 + 派生态 + commit 档 + 选中栈。
 
-**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`。
+**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`、`agent-policy`、`dev-flow-skills`、`pi-cadence`。
 
 > 注：`multi-repo-component`/`central-docs` 由 repoRole 派生（非 components 列表），但作为 cond 名会经 activeConds 透传，故一并列出。
 
@@ -183,7 +183,7 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 | 文档站点（HTML 生成站） | docs-site | docs/.vitepress/config.ts | 维护者侧 npx vitepress build 生成 HTML 站，markdown 为源 |
 | 设计视觉资产（手写 HTML） | design-views | docs/02-design/views/ | HTML 非 SSOT，冲突以 markdown 为准 |
 | Agent 策略与执行门禁 | agent-policy | dev-workflow-rules 治理段 + agent-governance 4 文档 + check-agent-policy.mjs + settings.json 重写 + 各 stack verify 目标 + AGENTS Policy 段 + lefthook verify-fast | 自动被 dev-flow-skills 激活 |
-| 研发流程 skill 三层 | dev-flow-skills | docs/skills/{dev-flow,test-spec,design-review}.md + .claude/skills/ 薄入口 + check-test-spec-consistency.mjs | 自动激活 agent-policy |
+| 研发流程 skill 三层 | dev-flow-skills | docs/skills/{dev-flow,test-spec,design-review}/SKILL.md + .claude/skills/ 薄入口 + check-test-spec-consistency.mjs + install-skills.sh(central-docs 附加) | 自动激活 agent-policy |
 | 研发迭代(PI)体系 | pi-cadence | ROADMAP/AGENTS/HANDOVER 的 PI 段 | 独立 |
 
 ### Commit 门禁三档
