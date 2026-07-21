@@ -1,22 +1,95 @@
 <!--require:claude-code-->
+<!--IF:agent-policy-->
 {
   "permissions": {
     "allow": [
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash({{VERIFY_FAST_CMD}})",
       "Read",
       "Write",
       "Edit",
       "Glob",
       "Grep"
     ],
+    "ask": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git reset:*)",
+      "Bash(git stash:*)"
+    ],
     "deny": [
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git checkout --:*)",
+      "Bash(git restore:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git stash drop:*)",
+      "Bash(git stash clear:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
       "Bash(rm -rf:*)",
       "Bash(sudo:*)"
     ]
+  },
+  "worktree": {
+    "baseRef": "head"
   }
 }
+<!--ELSE-->
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep"
+    ],
+    "ask": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git reset:*)",
+      "Bash(git stash:*)"
+    ],
+    "deny": [
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git checkout --:*)",
+      "Bash(git restore:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git stash drop:*)",
+      "Bash(git stash clear:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "worktree": {
+    "baseRef": "head"
+  }
+}
+<!--/IF:agent-policy-->

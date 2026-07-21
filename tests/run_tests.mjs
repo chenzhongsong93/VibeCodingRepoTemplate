@@ -294,7 +294,7 @@ test('SKILL.md: exists and documents assembly contract', () => {
 });
 
 test('runtime adapters: claude-code produces .claude/settings.json, others produce nothing', () => {
-  // claude-code → .claude/settings.json
+  // claude-code → .claude/settings.json (minimal model: no agent-policy)
   const tmpC = '/tmp/init-code-repo-test-rt-cc';
   rmSync(tmpC, { recursive: true, force: true });
   assemble(tmpC, { projectName:'D', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:[] });
@@ -304,6 +304,15 @@ test('runtime adapters: claude-code produces .claude/settings.json, others produ
   const rm = readFileSync(`${tmpC}/README.md`, 'utf8');
   assertOk(rm.startsWith('# D'), 'core README intact (not overwritten)');
 
+  // minimal-model security assertions: git write in ask (not allow), destructive in deny, no verify
+  const sj = JSON.parse(readFileSync(`${tmpC}/.claude/settings.json`, 'utf8'));
+  const allowStr = (sj.permissions.allow || []).join(' ');
+  assertOk(!allowStr.includes('git commit') && !allowStr.includes('git push'), 'minimal: git commit/push NOT in allow');
+  assertOk((sj.permissions.ask || []).some(p => p.includes('git commit')), 'minimal: git commit in ask');
+  assertOk((sj.permissions.deny || []).some(p => p.includes('reset --hard')), 'minimal: deny has reset --hard');
+  assertOk(!allowStr.includes('verify'), 'minimal: no verify in allow');
+  assertOk(!JSON.stringify(sj).includes('{{VERIFY_FAST_CMD}}'), 'no leftover var (minimal has no verify line anyway)');
+
   // codex runtime → no extra files (adapter removed)
   const tmpX = '/tmp/init-code-repo-test-rt-codex';
   rmSync(tmpX, { recursive: true, force: true });
@@ -311,6 +320,18 @@ test('runtime adapters: claude-code produces .claude/settings.json, others produ
   const treeX = fileTree(tmpX);
   assertOk(!treeX.includes('README.md') || readFileSync(`${tmpX}/README.md`,'utf8').startsWith('# D'), 'codex does not overwrite README');
   assertOk(!treeX.some(f => f.startsWith('codex/')), 'no codex adapter dir');
+});
+
+test('agent-policy: settings.json full model with verify in allow', () => {
+  const tmp = '/tmp/init-code-repo-test-settings-full';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  const sj = JSON.parse(readFileSync(`${tmp}/.claude/settings.json`, 'utf8'));
+  const allowStr = (sj.permissions.allow || []).join(' ');
+  assertOk(allowStr.includes('verify'), 'full: verify in allow');
+  assertOk(allowStr.includes('make verify-fast'), 'full: VERIFY_FAST_CMD substituted to make verify-fast (rust stack)');
+  assertOk((sj.permissions.ask || []).some(p => p.includes('git commit')), 'full: git commit in ask');
+  assertOk(!JSON.stringify(sj).includes('{{VERIFY_FAST_CMD}}'), 'no leftover var');
 });
 
 for (const name of ['component', 'central-docs']) {
