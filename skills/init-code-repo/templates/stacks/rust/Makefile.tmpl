@@ -19,3 +19,22 @@ build:
 
 run:
 	cargo run
+<!--IF:agent-policy-->
+.PHONY: policy-check verify-fast verify-ci verify-release
+policy-check:
+	@node scripts/check-agent-policy.mjs .
+
+verify-fast: policy-check
+	@git diff HEAD --check
+	@cargo fmt --check
+	@cargo clippy -D warnings
+	@cargo test --lib
+
+verify-ci: verify-fast
+	@cargo test
+
+verify-release:
+	@if [ "$$ALLOW_REAL_E2E" != "1" ]; then echo "需 ALLOW_REAL_E2E=1"; exit 2; fi
+	@$(MAKE) verify-ci
+	@cargo build --release
+<!--/IF:agent-policy-->

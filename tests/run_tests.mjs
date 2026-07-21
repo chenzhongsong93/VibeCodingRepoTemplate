@@ -350,6 +350,60 @@ test('agent-policy: check-agent-policy.mjs shipped + POLICY_ID substituted', () 
   assertClean(cap, 'check-agent-policy.mjs');
 });
 
+test('agent-policy: rust Makefile verify targets', () => {
+  const tmp = '/tmp/init-code-repo-test-verify-rust';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('verify-fast:'), 'rust Makefile has verify-fast');
+  assertOk(mk.includes('verify-release:'), 'rust Makefile has verify-release');
+  assertOk(mk.includes('ALLOW_REAL_E2E'), 'rust Makefile has ALLOW_REAL_E2E guard');
+  assertOk(mk.includes('policy-check:'), 'rust Makefile has policy-check');
+  assertClean(mk, 'rust Makefile');
+  const tmp2 = '/tmp/init-code-repo-test-verify-rust-no';
+  rmSync(tmp2, { recursive: true, force: true });
+  assemble(tmp2, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const mk2 = readFileSync(`${tmp2}/Makefile`, 'utf8');
+  assertOk(!mk2.includes('verify-fast:'), 'no verify-fast without agent-policy');
+  assertOk(!mk2.includes('policy-check:'), 'no policy-check without agent-policy');
+  assertClean(mk2, 'rust Makefile no-ap');
+});
+
+test('agent-policy: node package.json verify scripts valid JSON both modes', () => {
+  // node package.json valid JSON both modes (whole-scripts IF/ELSE override)
+  const tmpNode = '/tmp/init-code-repo-test-verify-node';
+  rmSync(tmpNode, { recursive: true, force: true });
+  assemble(tmpNode, { projectName:'P', oneLine:'L', year:'2026', stacks:['node'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  const pj = JSON.parse(readFileSync(`${tmpNode}/package.json`, 'utf8'));
+  assertOk(pj.scripts['verify:fast'], 'node has verify:fast');
+  assertOk(pj.scripts['verify:release'], 'node has verify:release');
+  assertOk(pj.scripts['verify:release'].includes('ALLOW_REAL_E2E'), 'node verify:release has guard');
+  assertOk(pj.scripts['verify:fast'].includes('check-agent-policy'), 'node verify:fast calls check-agent-policy');
+  assertOk(pj.scripts.lint, 'lint still present');
+  // without agent-policy → no verify scripts, valid JSON
+  const tmpNode2 = '/tmp/init-code-repo-test-verify-node-no';
+  rmSync(tmpNode2, { recursive: true, force: true });
+  assemble(tmpNode2, { projectName:'P', oneLine:'L', year:'2026', stacks:['node'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const pj2 = JSON.parse(readFileSync(`${tmpNode2}/package.json`, 'utf8'));
+  assertOk(!pj2.scripts['verify:fast'], 'no verify:fast without agent-policy');
+  assertOk(pj2.scripts.lint, 'lint still present without agent-policy');
+  assertClean(readFileSync(`${tmpNode2}/package.json`, 'utf8'), 'node package.json no-ap clean');
+});
+
+test('agent-policy: go + python Makefile verify targets', () => {
+  for (const stack of ['go', 'python']) {
+    const tmp = `/tmp/init-code-repo-test-verify-${stack}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[stack], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+    const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+    assertOk(mk.includes('verify-fast:'), `${stack} Makefile has verify-fast`);
+    assertOk(mk.includes('verify-release:'), `${stack} Makefile has verify-release`);
+    assertOk(mk.includes('ALLOW_REAL_E2E'), `${stack} Makefile has ALLOW_REAL_E2E guard`);
+    assertOk(mk.includes('policy-check:'), `${stack} Makefile has policy-check`);
+    assertClean(mk, `${stack} Makefile`);
+  }
+});
+
 for (const name of ['component', 'central-docs']) {
   test(`${name}: file tree matches golden`, () => {
     const tmp = `/tmp/init-code-repo-test-${name}`;
