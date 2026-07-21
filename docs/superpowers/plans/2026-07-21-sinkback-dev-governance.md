@@ -654,22 +654,22 @@ git commit -m "feat(agent-policy): AGENTS Policy段 + lefthook verify-fast + com
 ### Task 3a: 三 skill SSOT 文档
 
 **Files:**
-- Create: `templates/core/docs/skills/{dev-flow,test-spec,design-review}.md.tmpl`
+- Create: `templates/core/docs/skills/{dev-flow,test-spec,design-review}/SKILL.md.tmpl`
 - Source: BaiWang `baiwang-docs/docs/skills/baiwang-dev-flow/SKILL.md`、`baiwang-test-spec/SKILL.md`、`baiwang-docs/docs/02-design/design-review-methodology.md`
 
-- [ ] **Step 3a.1: dev-flow.md.tmpl（源+替换表）**
+> SSOT 用目录结构 `docs/skills/<skill>/SKILL.md`（匹配 BaiWang + install-skills.sh 软链到用户级 `~/.claude/skills/<skill>/` 的需求，见 3d）。每个 SSOT 文件首行 `<!--require:dev-flow-skills-->`。
 
-每个 SSOT 文件首行 `<!--IF:dev-flow-skills-->`，末行 `<!--/IF:dev-flow-skills-->`。
+- [ ] **Step 3a.1: dev-flow/SKILL.md.tmpl（源+替换表）**
 
-`dev-flow.md.tmpl`：从 BaiWang `baiwang-dev-flow/SKILL.md` 复制正文，替换 `baiwang-dev-flow`→`dev-flow`、`百望开发流程入口`→`项目开发流程入口`、`百望`→`项目`、`make verify-fast`→`{{VERIFY_FAST_CMD}}`、frontmatter `name`/`description` 去 baiwang/百望。保留 10 步结构、Done 清单、铁律。
+从 BaiWang `baiwang-dev-flow/SKILL.md` 复制正文，替换 `baiwang-dev-flow`→`dev-flow`、`百望开发流程入口`→`项目开发流程入口`、`百望`→`项目`、`make verify-fast`→`{{VERIFY_FAST_CMD}}`、frontmatter `name`/`description` 去 baiwang/百望。保留 10 步结构、Done 清单、铁律。
 
-- [ ] **Step 3a.2: test-spec.md.tmpl（源+替换表）**
+- [ ] **Step 3a.2: test-spec/SKILL.md.tmpl（源+替换表）**
 
 从 BaiWang `baiwang-test-spec/SKILL.md` 复制，替换 `baiwang-test-spec`→`test-spec`、`百望`泛化、Octo/Neo4j→"外部服务/持久化"、`make verify-fast`→`{{VERIFY_FAST_CMD}}`。保留六步方法论、1:1 铁律、L1/L2/L3、L2 禁 mock、一致性校验命令。
 
-> test-spec.md 引用 `docs/rules/testing-rules.md`（three-tier-test 组件）用 `<!--IF:three-tier-test-->` 包裹（同 2a.3 模式）避免死链；`docs/rules/dev-workflow-rules.md` 引用恒存在。
+> test-spec SSOT 引用 `docs/rules/testing-rules.md`（three-tier-test 组件）用 `<!--IF:three-tier-test-->` 包裹（同 2a.3 模式）避免死链；`docs/rules/dev-workflow-rules.md` 引用恒存在。
 
-- [ ] **Step 3a.3: design-review.md.tmpl（源+替换表）**
+- [ ] **Step 3a.3: design-review/SKILL.md.tmpl（源+替换表）**
 
 从 BaiWang `baiwang-docs/docs/02-design/design-review-methodology.md` 复制（SSOT，非薄入口）。替换 `百望`泛化、BaiWang 锚点→泛化或删除。保留三铁律、7 维度×4 层框架、流程、红旗。
 
@@ -681,12 +681,12 @@ test('dev-flow-skills: three SSOT + agent-policy auto-activated', () => {
   rmSync(tmp, { recursive: true, force: true });
   assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
   const tree = fileTree(tmp);
-  assertOk(tree.includes('docs/skills/dev-flow.md'), 'dev-flow SSOT');
-  assertOk(tree.includes('docs/skills/test-spec.md'), 'test-spec SSOT');
-  assertOk(tree.includes('docs/skills/design-review.md'), 'design-review SSOT');
+  assertOk(tree.includes('docs/skills/dev-flow/SKILL.md'), 'dev-flow SSOT');
+  assertOk(tree.includes('docs/skills/test-spec/SKILL.md'), 'test-spec SSOT');
+  assertOk(tree.includes('docs/skills/design-review/SKILL.md'), 'design-review SSOT');
   assertOk(tree.includes('docs/02-design/agent-governance/policy.md'), 'agent-policy auto-activated');
   assertOk(tree.includes('scripts/check-agent-policy.mjs'), 'check-agent-policy present');
-  const df = readFileSync(`${tmp}/docs/skills/dev-flow.md`, 'utf8');
+  const df = readFileSync(`${tmp}/docs/skills/dev-flow/SKILL.md`, 'utf8');
   assertOk(!df.includes('baiwang'), 'no baiwang leftover');
   assertOk(!df.includes('{{VERIFY_FAST_CMD}}'), 'VERIFY_FAST_CMD substituted');
   assertClean(df, 'dev-flow SSOT');
@@ -723,12 +723,12 @@ description: 项目开发流程入口。接到任何开发任务（创建功能/
 
 # dev-flow（Claude Code 入口适配器）
 
-> 本 skill 是 Claude Code 最薄入口。**方法论 SSOT 见** [docs/skills/dev-flow.md](../../../docs/skills/dev-flow.md)，触发后先读它再执行。本文件不复制正文（避免漂移）。
+> 本 skill 是 Claude Code 最薄入口。**方法论 SSOT 见** [docs/skills/dev-flow/SKILL.md](../../../docs/skills/dev-flow/SKILL.md)，触发后先读它再执行。本文件不复制正文（避免漂移）。
 > Codex/OpenCode/zcode 等不经本 skill，直接经 AGENTS.md 指针读同一 SSOT。
 
 ## 触发后
 
-1. 读 SSOT：`docs/skills/dev-flow.md`（10 步 + Done 清单）。
+1. 读 SSOT：`docs/skills/dev-flow/SKILL.md`（10 步 + Done 清单）。
 2. 按 SSOT 执行。
 
 ## 不做什么
@@ -736,7 +736,7 @@ description: 项目开发流程入口。接到任何开发任务（创建功能/
 - 不复制 SSOT 正文到本文件（改 SSOT 即可，本文件无需同步）。
 ```
 
-`test-spec/SKILL.md.tmpl`、`design-review/SKILL.md.tmpl`：同模式，分别指向 `docs/skills/test-spec.md`、`docs/skills/design-review.md`，description 泛化自 BaiWang（去百望）。design-review 可直接从 BaiWang `baiwang-docs/.claude/skills/design-review/SKILL.md` 复制泛化。
+`test-spec/SKILL.md.tmpl`、`design-review/SKILL.md.tmpl`：同模式，分别指向 `docs/skills/test-spec/SKILL.md`、`docs/skills/design-review/SKILL.md`，description 泛化自 BaiWang（去百望）。design-review 可直接从 BaiWang `baiwang-docs/.claude/skills/design-review/SKILL.md` 复制泛化。
 
 - [ ] **Step 3b.2: 测试断言**
 
@@ -750,7 +750,7 @@ test('dev-flow-skills: thin adapters under .claude/skills', () => {
   assertOk(tree.includes('.claude/skills/test-spec/SKILL.md'), 'test-spec thin adapter');
   assertOk(tree.includes('.claude/skills/design-review/SKILL.md'), 'design-review thin adapter');
   const t = readFileSync(`${tmp}/.claude/skills/dev-flow/SKILL.md`, 'utf8');
-  assertOk(t.includes('docs/skills/dev-flow.md'), 'thin adapter points to SSOT');
+  assertOk(t.includes('docs/skills/dev-flow/SKILL.md'), 'thin adapter points to SSOT');
   assertClean(t, 'thin adapter');
   const tmp2 = '/tmp/init-code-repo-test-thin-no-cc';
   rmSync(tmp2, { recursive: true, force: true });
@@ -843,6 +843,61 @@ Run: `npm test` → PASS。Commit:
 ```bash
 git add templates/core/scripts/check-test-spec-consistency.mjs.tmpl tests/run_tests.mjs
 git commit -m "feat(dev-flow-skills): test-spec 1:1 一致性校验脚本"
+```
+
+### Task 3d: install-skills.sh（central-docs 多仓附加）
+
+**Files:**
+- Create: `templates/central-docs/scripts/install-skills.sh.tmpl`
+- Source: BaiWang `baiwang-docs/docs/skills/install-skills.sh`
+
+> 多仓模式下，central-docs 仓装 SSOT + install-skills.sh；用户运行 install-skills.sh 把 `docs/skills/<skill>/` 软链到用户级 `~/.claude/skills/` + `~/.codex/skills/`，让三 skill 在所有仓自动可用（跨仓共用一份 SSOT）。单仓模式无此文件（每仓自带副本）。
+
+- [ ] **Step 3d.1: 写脚本（源+替换表）**
+
+首行 `<!--require:central-docs-->`（仅 central-docs 仓生成）。从 BaiWang `baiwang-docs/docs/skills/install-skills.sh` 复制，应用替换表：
+
+| 搜索 | 替换 |
+|---|---|
+| `baiwang-dev-flow` | `dev-flow` |
+| `baiwang-test-spec` | `test-spec` |
+| `SKILLS=(baiwang-dev-flow baiwang-test-spec)` | `SKILLS=(dev-flow test-spec design-review)` |
+| `baiwang` 品牌名/注释 | 泛化（"项目"或删除） |
+| `BAIWANG_DOCS_DIR` 变量名 | `DOCS_DIR`（泛化） |
+
+保留：幂等软链逻辑（已存在且指向正确则跳过，否则重建）、`$HOME/.claude/skills` + `$HOME/.codex/skills` 双目标、源缺失报错、非软链真实文件报错。脚本自探测中央 docs 仓路径（`../../` 相对脚本位置）。
+
+- [ ] **Step 3d.2: 测试断言**
+
+```js
+test('dev-flow-skills: install-skills.sh in central-docs repo', () => {
+  const tmp = '/tmp/init-code-repo-test-install-skills';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', repoRole:'central-docs', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('scripts/install-skills.sh'), 'install-skills.sh in central-docs');
+  const s = readFileSync(`${tmp}/scripts/install-skills.sh`, 'utf8');
+  assertOk(s.includes('dev-flow') && s.includes('test-spec') && s.includes('design-review'), 'SKILLS array has 3 skills');
+  assertOk(!s.includes('baiwang'), 'no baiwang leftover');
+  assertOk(s.includes('.claude/skills') && s.includes('.codex/skills'), 'installs to claude + codex user dirs');
+  assertClean(s, 'install-skills.sh');
+  // 非 central-docs → 无 install-skills.sh
+  const tmp2 = '/tmp/init-code-repo-test-install-skills-no';
+  rmSync(tmp2, { recursive: true, force: true });
+  assemble(tmp2, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  assertOk(!fileTree(tmp2).includes('scripts/install-skills.sh'), 'no install-skills.sh without central-docs');
+});
+```
+
+- [ ] **Step 3d.3: 跑测试 + Commit**
+
+Run: `npm test` → PASS。Commit:
+
+```bash
+git add templates/central-docs/scripts/install-skills.sh.tmpl tests/run_tests.mjs
+git commit -m "feat(dev-flow-skills): install-skills.sh 用户级软链（central-docs 多仓附加）
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```
 
 ---
