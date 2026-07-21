@@ -1,0 +1,20 @@
+<!--require:agent-policy-->
+# AI 工具规则兼容矩阵
+
+| 工具 | 仓级入口 | 适配方式 | 验证方式 |
+|---|---|---|---|
+| Claude Code | `CLAUDE.md` | 文件仅含 `@AGENTS.md`，不复制规则 | `/memory` 查看已加载文件并复述政策版本 |
+| Codex | `AGENTS.md` | 原生读取，无额外规则副本 | 从仓库根启动并要求列出活跃规则与验证命令 |
+| OpenCode | `AGENTS.md` | 原生读取；只有确需额外规则时才用 `opencode.json` | 要求列出活跃规则与验证命令 |
+
+## 约束
+
+- 工具适配文件不得复制开发流程、代码规范和安全政策。
+- 工具权限只决定“能否执行”，不能被解释为用户已经授权业务副作用。
+- 新增其他 AI 工具时，只增加最薄入口适配；公共规则仍回到 `AGENTS.md` 和 `docs/rules/`。
+
+## 官方参考
+
+- Codex：<https://developers.openai.com/codex/guides/agents-md>
+- Claude Code：<https://code.claude.com/docs/en/memory>
+- OpenCode：<https://dev.opencode.ai/docs/rules/>
