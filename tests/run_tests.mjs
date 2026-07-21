@@ -621,6 +621,24 @@ test('dev-flow-skills: check-test-spec-consistency shipped', () => {
   assert.equal(r.status, 0, 'skip when no test-spec dir');
 });
 
+test('dev-flow-skills: install-skills.sh in central-docs repo', () => {
+  const tmp = '/tmp/init-code-repo-test-install-skills';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', repoRole:'central-docs', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('scripts/install-skills.sh'), 'install-skills.sh in central-docs');
+  const s = readFileSync(`${tmp}/scripts/install-skills.sh`, 'utf8');
+  assertOk(s.includes('dev-flow') && s.includes('test-spec') && s.includes('design-review'), 'SKILLS array has 3 skills');
+  assertOk(!s.includes('baiwang'), 'no baiwang leftover');
+  assertOk(s.includes('.claude/skills') && s.includes('.codex/skills'), 'installs to claude + codex user dirs');
+  assertClean(s, 'install-skills.sh');
+  // 非 central-docs → 无 install-skills.sh
+  const tmp2 = '/tmp/init-code-repo-test-install-skills-no';
+  rmSync(tmp2, { recursive: true, force: true });
+  assemble(tmp2, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  assertOk(!fileTree(tmp2).includes('scripts/install-skills.sh'), 'no install-skills.sh without central-docs');
+});
+
 test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
   const tmp = '/tmp/init-code-repo-test-zh-content';
   rmSync(tmp, { recursive: true, force: true });

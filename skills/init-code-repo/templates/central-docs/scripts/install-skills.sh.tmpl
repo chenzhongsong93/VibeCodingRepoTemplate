@@ -1,0 +1,47 @@
+<!--require:dev-flow-skills-->
+#!/usr/bin/env bash
+# install-skills.sh — 把三个 skill 软连接到用户级 skill 目录,
+# 让 Claude Code(~/.claude/skills/)与 Codex(~/.codex/skills/)在所有仓自动可用。
+# 幂等:已存在且指向正确则跳过,否则重建。SSOT = 本目录(<docs 仓>/docs/skills/)。
+set -euo pipefail
+
+: "${HOME:?HOME 未设置,无法定位用户级 skill 目录}"
+
+# 探测中央 docs 仓路径:环境变量 > 脚本自身所在目录(../..)
+# 脚本位于 <docs 仓>/scripts/install-skills.sh,向上两级到 docs 仓根。
+# readlink -f 解末端符号链接(脚本经 symlink 调用时定位真实源),再用 -P 物理解析目录
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd -P "$(dirname "$SELF")" && pwd -P)"
+DOCS_DIR="${DOCS_DIR:-$(cd -P "$SCRIPT_DIR/.." && pwd -P)}"
+SKILLS_SRC="$DOCS_DIR/docs/skills"
+
+SKILLS=(dev-flow test-spec design-review)
+CLAUDE_DIR="$HOME/.claude/skills"
+CODEX_DIR="$HOME/.codex/skills"
+
+echo "SSOT 源: $SKILLS_SRC"
+echo "Claude 用户级: $CLAUDE_DIR"
+echo "Codex 用户级: $CODEX_DIR"
+
+for skill in "${SKILLS[@]}"; do
+  src="$SKILLS_SRC/$skill"
+  if [ ! -d "$src" ]; then
+    echo "❌ 源缺失: $src"; exit 1
+  fi
+  for dest_dir in "$CLAUDE_DIR" "$CODEX_DIR"; do
+    mkdir -p "$dest_dir"
+    dest="$dest_dir/$skill"
+    if [ -L "$dest" ] && [ "$(readlink -f "$dest")" = "$(readlink -f "$src")" ]; then
+      echo "✓ $skill → $dest_dir (已存在,跳过)"
+    else
+      if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+        echo "❌ $dest 已存在且非软连接(真实目录/文件),请人工确认后删除再装"; exit 1
+      fi
+      rm -f "$dest"
+      ln -s "$src" "$dest"
+      echo "✚ $skill → $dest_dir (已建软连接)"
+    fi
+  done
+done
+
+echo "完成。两端任意仓均可调用 dev-flow / test-spec / design-review skill。"
