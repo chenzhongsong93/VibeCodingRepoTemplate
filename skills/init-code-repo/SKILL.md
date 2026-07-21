@@ -30,6 +30,9 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 | 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |
 | 远端托管 | gitcode / github / gitlab / 无 | remote=none 时无 remote-hook；否则有 |
 | Commit 门禁档 | 默认正则 / 自定义正则 / 不要求 | 决定 commit-msg 段 |
+| 分支模型 | 默认(dev/main/fix/release/v) / 自定义 | agent-policy 激活时填入 {{DEV_BRANCH}}/{{MAIN_BRANCH}}/{{FIX_BRANCH}}/{{RELEASE_PREFIX}} |
+| Policy 标记 | 默认 `{{PROJECT_NAME}}-Agent-Policy: 1.0` / 自定义 | agent-policy 激活时填入 {{POLICY_ID}} |
+| PI 命名格式 | 默认 `YYYY-PI<N>` / 自定义 | pi-cadence 激活时填入 {{PI_FORMAT}} |
 | 文档命名 | 英文 / 中文 / 自定义 | 决定文档文件名风格（工具契约文件 AGENTS.md/CLAUDE.md/README.md/lefthook.yml 等恒英文；docs/ 下文档与 ROADMAP/HANDOVER 等可中文/自定义）|
 | 可选组件 | 多选（见下表） | 决定装配范围与版本派生 |
 
@@ -87,6 +90,14 @@ agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目
 | `{{ONE_LINE}}` | oneLine | 阶段 1 一句话定位 |
 | `{{YEAR}}` | year | 当前年份（4 位） |
 | `{{COMMIT_REGEX}}` | commitRegex | commit 档为 custom 时的用户正则；否则不出现 |
+| `{{DEV_BRANCH}}` | devBranch | 阶段1录取（分支模型，默认 dev） |
+| `{{MAIN_BRANCH}}` | mainBranch | 阶段1录取（默认 main） |
+| `{{FIX_BRANCH}}` | fixBranch | 阶段1录取（默认 fix） |
+| `{{RELEASE_PREFIX}}` | releasePrefix | 阶段1录取（默认 release/v） |
+| `{{POLICY_ID}}` | policyId | 阶段1录取（默认 {{PROJECT_NAME}}-Agent-Policy: 1.0） |
+| `{{PI_FORMAT}}` | piFormat | 阶段1录取（默认 YYYY-PI<N>） |
+| `{{PI_FIRST}}` | piFirst | 派生（PI_FORMAT 的 YYYY→YEAR、<N>→1） |
+| `{{VERIFY_FAST_CMD}}` | verifyFastCmd | 派生（node 单栈→npm run verify:fast，否则 make verify-fast） |
 
 未知占位符保持不变。
 
@@ -124,6 +135,7 @@ zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径
 **派生态**：
 - `full-workflow` = components 含 `docker` 或 `three-tier-test`。
 - `remote-hook` = components 含 `remote-hook` 或 `remote !== 'none'`。
+- `agent-policy` = components 含 `dev-flow-skills`（流程层依赖执行层）。
 
 **commit 档**（按 commitGate.mode）：
 - `default` → `commit-default`
@@ -170,6 +182,9 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 | API 文档 | api-docs | 02-design/api/api-reference.md | AGENTS 索引加 api 行 |
 | 文档站点（HTML 生成站） | docs-site | docs/.vitepress/config.ts | 维护者侧 npx vitepress build 生成 HTML 站，markdown 为源 |
 | 设计视觉资产（手写 HTML） | design-views | docs/02-design/views/ | HTML 非 SSOT，冲突以 markdown 为准 |
+| Agent 策略与执行门禁 | agent-policy | dev-workflow-rules 治理段 + agent-governance 4 文档 + check-agent-policy.mjs + settings.json 重写 + 各 stack verify 目标 + AGENTS Policy 段 + lefthook verify-fast | 自动被 dev-flow-skills 激活 |
+| 研发流程 skill 三层 | dev-flow-skills | docs/skills/{dev-flow,test-spec,design-review}.md + .claude/skills/ 薄入口 + check-test-spec-consistency.mjs | 自动激活 agent-policy |
+| 研发迭代(PI)体系 | pi-cadence | ROADMAP/AGENTS/HANDOVER 的 PI 段 | 独立 |
 
 ### Commit 门禁三档
 

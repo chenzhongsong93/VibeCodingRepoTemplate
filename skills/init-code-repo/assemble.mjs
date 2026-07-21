@@ -53,11 +53,24 @@ function writeTree(srcDir, targetDir, ctx, activeSet, map) {
 }
 
 export function assemble(targetDir, config) {
+  const bm = config.branchModel || {};
+  const devBranch = bm.dev || 'dev';
+  const mainBranch = bm.main || 'main';
+  const fixBranch = bm.fix || 'fix';
+  const releasePrefix = bm.release || 'release/v';
+  const policyId = config.policyId || `${config.projectName}-Agent-Policy: 1.0`;
+  const piFormat = config.piFormat || 'YYYY-PI<N>';
+  const piFirst = piFormat.replace('YYYY', String(config.year)).replace('<N>', '1');
+  const stacks = config.stacks || [];
+  const verifyFastCmd = stacks.length === 1 && stacks[0] === 'node'
+    ? 'npm run verify:fast' : 'make verify-fast';
   const ctx = {
     projectName: config.projectName,
     oneLine: config.oneLine,
     year: String(config.year),
     commitRegex: config.commitGate?.regex || '',
+    devBranch, mainBranch, fixBranch, releasePrefix,
+    policyId, piFormat, piFirst, verifyFastCmd,
   };
   const conds = [...activeConds(config), ...extraConds(config)];
   const activeSet = new Set(conds);

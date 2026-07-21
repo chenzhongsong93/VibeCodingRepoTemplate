@@ -3,6 +3,14 @@ const VARS = {
   ONE_LINE: 'oneLine',
   YEAR: 'year',
   COMMIT_REGEX: 'commitRegex',
+  DEV_BRANCH: 'devBranch',
+  MAIN_BRANCH: 'mainBranch',
+  FIX_BRANCH: 'fixBranch',
+  RELEASE_PREFIX: 'releasePrefix',
+  POLICY_ID: 'policyId',
+  PI_FORMAT: 'piFormat',
+  PI_FIRST: 'piFirst',
+  VERIFY_FAST_CMD: 'verifyFastCmd',
 };
 
 export function substitute(text, ctx) {

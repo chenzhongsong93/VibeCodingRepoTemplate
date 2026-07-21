@@ -3,6 +3,7 @@ export function activeConds(config) {
   const set = new Set(comps);
   if (set.has('docker') || set.has('three-tier-test')) set.add('full-workflow');
   if (config.remote && config.remote !== 'none') set.add('remote-hook');
+  if (set.has('dev-flow-skills')) set.add('agent-policy');
   return [...set];
 }
 
