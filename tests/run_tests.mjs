@@ -674,3 +674,17 @@ test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works'
   const dead = deadLinks(tmp);
   assert.equal(dead.length, 0, `zh dead links:\n${dead.map(d => '  ' + d.file + ' -> ' + d.link).join('\n')}`);
 });
+
+test('pi-cadence: ROADMAP/AGENTS/HANDOVER PI段', () => {
+  const tmp = '/tmp/init-code-repo-test-pi';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['pi-cadence'] });
+  const rm = readFileSync(`${tmp}/docs/ROADMAP.md`, 'utf8');
+  assertOk(rm.includes('迭代（PI）体系'), 'ROADMAP has PI section');
+  assertOk(rm.includes('2026-PI1'), 'PI_FIRST substituted');
+  assertOk(rm.includes('YYYY-PI<N>'), 'PI_FORMAT shown');
+  assertOk(!rm.includes('{{PI_FIRST}}') && !rm.includes('{{PI_FORMAT}}'), 'no leftover PI vars');
+  assertClean(rm, 'ROADMAP');
+  assertOk(readFileSync(`${tmp}/AGENTS.md`,'utf8').includes('迭代（PI）体系'), 'AGENTS has PI section');
+  assertOk(readFileSync(`${tmp}/docs/HANDOVER.md`,'utf8').includes('当前 PI'), 'HANDOVER has 当前 PI');
+});
