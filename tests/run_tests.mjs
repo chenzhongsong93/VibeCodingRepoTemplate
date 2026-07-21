@@ -434,6 +434,16 @@ test('agent-policy: check-agent-policy.mjs exits 0 (full invariants)', () => {
   assert.equal(r.status, 0, `check-agent-policy exits 0; stderr: ${String(r.stderr)}`);
 });
 
+test('agent-policy: check-agent-policy.mjs works for non-claude-code runtime', () => {
+  const tmp = '/tmp/init-code-repo-test-check-policy-no-cc';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  assertOk(!fileTree(tmp).includes('.claude/settings.json'), 'no settings.json without claude-code runtime');
+  assertOk(fileTree(tmp).includes('scripts/check-agent-policy.mjs'), 'check-agent-policy still ships');
+  const r = spawnSync('node', [`${tmp}/scripts/check-agent-policy.mjs`, tmp]);
+  assert.equal(r.status, 0, `check-agent-policy exits 0 for non-claude-code; stderr: ${String(r.stderr)}`);
+});
+
 for (const name of ['component', 'central-docs']) {
   test(`${name}: file tree matches golden`, () => {
     const tmp = `/tmp/init-code-repo-test-${name}`;

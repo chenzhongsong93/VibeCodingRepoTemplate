@@ -29,7 +29,7 @@ if (existsSync(sjPath)) {
     check(!allow.includes('git commit') && !allow.includes('git push'), 'settings.json allow has NO git write');
   } catch (e) { check(false, `settings.json valid JSON: ${e.message}`); }
 } else {
-  check(false, '.claude/settings.json exists');
+  check(true, '.claude/settings.json absent (non-claude-code runtime; permission model N/A)');
 }
 
 // 4. agent-governance 4 文档存在

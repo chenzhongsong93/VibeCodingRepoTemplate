@@ -188,7 +188,7 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 
 ### Commit 门禁三档
 
-- 默认正则：`^(feat|fix|docs|style|refactor|perf|test|chore)\(.*\): .+\s#\d+$`
+- 默认正则：`^(feat|fix|docs|style|refactor|perf|test|chore)\([^)]+\): .+\s#\d+$`
 - 自定义正则：用户提供。
 - 不要求：仅建议，非强制。
 
