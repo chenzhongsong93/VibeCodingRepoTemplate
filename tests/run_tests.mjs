@@ -334,6 +334,22 @@ test('agent-policy: settings.json full model with verify in allow', () => {
   assertOk(!JSON.stringify(sj).includes('{{VERIFY_FAST_CMD}}'), 'no leftover var');
 });
 
+test('agent-policy: check-agent-policy.mjs shipped + POLICY_ID substituted', () => {
+  // Full run (exits 0) is asserted in the 2g AGENTS-Policy test, after the
+  // AGENTS Policy段 is added. Here we only verify the script ships with its
+  // {{POLICY_ID}} placeholder substituted (the script's own invariants beyond
+  // AGENTS — settings.json full model + agent-governance 4 docs — already hold
+  // at this point; only assertion ② needs the 2g AGENTS段).
+  const tmp = '/tmp/init-code-repo-test-check-policy';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  assertOk(fileTree(tmp).includes('scripts/check-agent-policy.mjs'), 'check-agent-policy shipped');
+  const cap = readFileSync(`${tmp}/scripts/check-agent-policy.mjs`, 'utf8');
+  assertOk(!cap.includes('{{POLICY_ID}}'), 'POLICY_ID substituted in shipped script');
+  assertOk(cap.includes('P-Agent-Policy: 1.0'), 'script embeds resolved POLICY_ID');
+  assertClean(cap, 'check-agent-policy.mjs');
+});
+
 for (const name of ['component', 'central-docs']) {
   test(`${name}: file tree matches golden`, () => {
     const tmp = `/tmp/init-code-repo-test-${name}`;

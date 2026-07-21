@@ -1,0 +1,44 @@
+<!--require:agent-policy-->
+#!/usr/bin/env node
+// check-agent-policy.mjs — 断言 agent-policy 不变量。挂到 Makefile policy-check 目标。
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const root = process.argv[2] || '.';
+const POLICY_ID = '{{POLICY_ID}}';
+let fail = 0;
+const check = (cond, msg) => { if (!cond) { console.error(`✗ ${msg}`); fail++; } else { console.log(`✓ ${msg}`); } };
+
+// 1. CLAUDE.md 恰为一行 @AGENTS.md
+const claude = existsSync(join(root, 'CLAUDE.md')) ? readFileSync(join(root, 'CLAUDE.md'), 'utf8').trim() : '';
+check(claude === '@AGENTS.md', 'CLAUDE.md is single line @AGENTS.md');
+
+// 2. AGENTS.md 含 Policy 标记
+const agents = existsSync(join(root, 'AGENTS.md')) ? readFileSync(join(root, 'AGENTS.md'), 'utf8') : '';
+check(agents.includes(POLICY_ID), `AGENTS.md contains ${POLICY_ID}`);
+
+// 3. .claude/settings.json 合法 JSON + verify 在 allow + git 写在 ask
+const sjPath = join(root, '.claude/settings.json');
+if (existsSync(sjPath)) {
+  try {
+    const sj = JSON.parse(readFileSync(sjPath, 'utf8'));
+    const allow = (sj.permissions?.allow || []).join(' ');
+    const ask = (sj.permissions?.ask || []).join(' ');
+    check(allow.includes('verify'), 'settings.json allow has verify');
+    check(ask.includes('git commit') && ask.includes('git push'), 'settings.json ask has git commit/push');
+    check(!allow.includes('git commit') && !allow.includes('git push'), 'settings.json allow has NO git write');
+  } catch (e) { check(false, `settings.json valid JSON: ${e.message}`); }
+} else {
+  check(false, '.claude/settings.json exists');
+}
+
+// 4. agent-governance 4 文档存在
+for (const f of ['policy.md', 'risk-levels.md', 'compatibility-matrix.md', 'validation-cases.md']) {
+  check(existsSync(join(root, 'docs/02-design/agent-governance', f)), `agent-governance/${f} exists`);
+}
+
+// 5. dev-workflow-rules 含 T0-T3 表
+const dw = existsSync(join(root, 'docs/rules/dev-workflow-rules.md')) ? readFileSync(join(root, 'docs/rules/dev-workflow-rules.md'), 'utf8') : '';
+check(dw.includes('T0–T3 公共风险分级'), 'dev-workflow-rules has T0-T3 table');
+
+process.exit(fail ? 1 : 0);
