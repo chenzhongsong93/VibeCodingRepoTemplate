@@ -413,6 +413,18 @@ test('zh-naming: file tree matches golden', () => {
   assertTreeEqual(actual, expected, 'zh-naming tree');
 });
 
+test('agent-policy: CLAUDE.md single-line when active', () => {
+  const baseCfg = { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] };
+  const tmpNo = '/tmp/init-code-repo-test-claude-no';
+  rmSync(tmpNo, { recursive: true, force: true });
+  assemble(tmpNo, baseCfg);
+  assertOk(readFileSync(`${tmpNo}/CLAUDE.md`,'utf8').split('\n').filter(l=>l.trim()).length > 1, 'no agent-policy: multi-line CLAUDE');
+  const tmpYes = '/tmp/init-code-repo-test-claude-yes';
+  rmSync(tmpYes, { recursive: true, force: true });
+  assemble(tmpYes, { ...baseCfg, components:['agent-policy'] });
+  assert.equal(readFileSync(`${tmpYes}/CLAUDE.md`,'utf8').trim(), '@AGENTS.md', 'agent-policy: CLAUDE.md is single @AGENTS.md');
+});
+
 test('agent-policy: dev-workflow-rules governance vs slim', () => {
   const baseCfg = { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] };
   const tmpSlim = '/tmp/init-code-repo-test-ap-slim';
