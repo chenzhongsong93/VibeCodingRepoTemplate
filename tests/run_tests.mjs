@@ -404,6 +404,36 @@ test('agent-policy: go + python Makefile verify targets', () => {
   }
 });
 
+test('agent-policy: AGENTS Policy段 + lefthook verify-fast', () => {
+  const tmp = '/tmp/init-code-repo-test-agents-policy';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  const a = readFileSync(`${tmp}/AGENTS.md`, 'utf8');
+  assertOk(a.includes('P-Agent-Policy: 1.0'), 'AGENTS has POLICY_ID substituted');
+  assertOk(a.includes('Policy 1.0 有效摘要'), 'AGENTS has Policy section');
+  assertOk(a.includes('T0'), 'AGENTS has T0-T3 summary');
+  assertOk(a.includes('授权边界'), 'AGENTS has 授权边界');
+  assertOk(a.includes('新会话续接读序'), 'AGENTS has session read order');
+  assertOk(!a.includes('{{POLICY_ID}}') && !a.includes('{{VERIFY_FAST_CMD}}'), 'AGENTS no leftover vars');
+  assertOk(!a.includes('{{DEV_BRANCH}}') && !a.includes('{{MAIN_BRANCH}}'), 'AGENTS branch vars substituted');
+  assertClean(a, 'AGENTS');
+  const lh = readFileSync(`${tmp}/lefthook.yml`, 'utf8');
+  assertOk(lh.includes('verify-fast'), 'lefthook has verify-fast');
+  assertOk(lh.includes('make verify-fast'), 'lefthook verify-fast cmd substituted');
+  assertOk(!lh.includes('{{VERIFY_FAST_CMD}}'), 'no leftover var');
+  assertClean(lh, 'lefthook');
+});
+
+test('agent-policy: check-agent-policy.mjs exits 0 (full invariants)', () => {
+  // Now that the AGENTS Policy段 (2g.1) ships {{POLICY_ID}}, all five
+  // check-agent-policy invariants hold → script exits 0.
+  const tmp = '/tmp/init-code-repo-test-check-policy-run';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  const r = spawnSync('node', [`${tmp}/scripts/check-agent-policy.mjs`, tmp]);
+  assert.equal(r.status, 0, `check-agent-policy exits 0; stderr: ${String(r.stderr)}`);
+});
+
 for (const name of ['component', 'central-docs']) {
   test(`${name}: file tree matches golden`, () => {
     const tmp = `/tmp/init-code-repo-test-${name}`;

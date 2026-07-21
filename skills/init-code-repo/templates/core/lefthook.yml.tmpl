@@ -7,6 +7,10 @@ pre-commit:
   commands:
     gitleaks:
       run: gitleaks protect --staged --redact --verbose
+<!--IF:agent-policy-->
+    verify-fast:
+      run: {{VERIFY_FAST_CMD}}
+<!--/IF:agent-policy-->
 <!--IF:rust-->
     rust-fmt:
       glob: "*.rs"
@@ -46,6 +50,10 @@ commit-msg:
 
 pre-push:
   commands:
+<!--IF:agent-policy-->
+    verify-fast:
+      run: {{VERIFY_FAST_CMD}}
+<!--/IF:agent-policy-->
 <!--IF:doc-sync-->
     doc-sync-check:
       run: |
