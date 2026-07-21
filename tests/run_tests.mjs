@@ -565,6 +565,29 @@ test('agent-policy: dev-workflow-rules governance vs slim', () => {
   assertClean(dwGov, 'gov dev-workflow');
 });
 
+test('dev-flow-skills: three SSOT + agent-policy auto-activated', () => {
+  const tmp = '/tmp/init-code-repo-test-devflow-skills';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['dev-flow-skills'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('docs/skills/dev-flow/SKILL.md'), 'dev-flow SSOT');
+  assertOk(tree.includes('docs/skills/test-spec/SKILL.md'), 'test-spec SSOT');
+  assertOk(tree.includes('docs/skills/design-review/SKILL.md'), 'design-review SSOT');
+  assertOk(tree.includes('docs/02-design/agent-governance/policy.md'), 'agent-policy auto-activated');
+  assertOk(tree.includes('scripts/check-agent-policy.mjs'), 'check-agent-policy present');
+  const df = readFileSync(`${tmp}/docs/skills/dev-flow/SKILL.md`, 'utf8');
+  assertOk(!df.includes('baiwang'), 'no baiwang leftover');
+  assertOk(!df.includes('{{VERIFY_FAST_CMD}}'), 'VERIFY_FAST_CMD substituted');
+  assertClean(df, 'dev-flow SSOT');
+  // test-spec + design-review SSOT also clean + no baiwang
+  const ts = readFileSync(`${tmp}/docs/skills/test-spec/SKILL.md`, 'utf8');
+  assertOk(!ts.includes('baiwang') && !ts.includes('octo') && !ts.includes('neo4j'), 'test-spec no baiwang/octo/neo4j');
+  assertClean(ts, 'test-spec SSOT');
+  const dr = readFileSync(`${tmp}/docs/skills/design-review/SKILL.md`, 'utf8');
+  assertOk(!dr.includes('baiwang') && !dr.includes('octo') && !dr.includes('neo4j'), 'design-review no baiwang/octo/neo4j');
+  assertClean(dr, 'design-review SSOT');
+});
+
 test('zh-naming: Chinese filenames + tooling-fixed English + links + gate works', () => {
   const tmp = '/tmp/init-code-repo-test-zh-content';
   rmSync(tmp, { recursive: true, force: true });

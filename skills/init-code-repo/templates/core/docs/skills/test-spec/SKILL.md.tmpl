@@ -1,0 +1,96 @@
+<!--require:dev-flow-skills-->
+---
+name: test-spec
+description: MUST use before writing any test code. Guides six-step test-spec design (因子分析→场景矩阵→边界值分析→异常场景分析→分支覆盖表→用例清单), 1:1 用例ID↔测试函数标签铁律, L1/L2/L3 层级定义, L2 禁 mock 铁律(真外部服务 + testcontainers), 一致性校验。用于设计新测试或补边界/异常用例。
+---
+
+# 测试流程 — test-spec 设计先行
+
+> 铁律:测试用例设计(test-spec)必须先于写码。SSOT = 各仓 docs/rules/testing-rules.md + docs/02-design/test-spec/。本 skill 是调用入口 + 流程引导,不复制 rules 内容。
+
+## 何时调用
+
+- 设计新特性的测试用例
+- 补 test-spec 标「待补充」的边界/异常用例
+- 写任何测试代码前
+
+## 六步方法论
+
+按顺序产出,写到各仓 `docs/02-design/test-spec/<NN-feature>.md`:
+
+### 1. 因子分析
+列出影响被测行为的因子维度及取值。常用维度:
+- 用户角色(owner/agent/系统)
+- UI 面 / 入口
+- 数据流(全链各步)
+- 真服务(外部服务/持久化/apiserver/LLM)
+- 数据来源(seed 固件 / 本轮创建)
+
+### 2. 场景矩阵
+因子组合 → 场景 → 用例 ID。每场景一行。
+
+### 3. 边界值分析(防 real L3 挖出的 bug)
+识别每因子的边界值(0/1/max/max+1/空/满),**每边界至少一条用例**。
+例:面板数据量 0(空)/0→1(首次创建)/N;回流率 0/0(防除零)/N/N(全 success);retry_count 0/max-1/max。
+
+### 4. 异常场景分析(防 real L3 挖出的 bug)
+系统枚举异常路径,**每关键异常至少一条用例或显式标注不测原因**。
+例:外部服务 500/502/timeout、连接断、非法输入、并发 race、服务宕。
+
+### 5. 分支覆盖表
+分支 → 覆盖用例。确认每分支有用例。
+
+### 6. 用例清单(1:1 ↔ 测试函数)
+每用例:ID + 场景 + 测试位置 + 用户操作流 + 验证方法 + 状态。
+
+## 用例 ID 方案
+
+`L{层}-{特性}-{序号}`,如 `L2-PROJ-01`、`L3-E2E-06`。每用例 ↔ 一个测试函数,1:1。
+
+## 1:1 标签铁律
+
+每测试函数首行加标签:
+- Rust: `// 覆盖:<SSOT节> <用例ID>`
+- TS/JS: `// 覆盖:<SSOT节> <用例ID>`
+
+SSOT 用例 ID 集合 = 代码标签集合,零差异、零重复。**不一致 = 构建阻断。**
+
+<!--IF:three-tier-test-->
+## 层级定义
+
+- **L1 单元**:纯函数/逻辑,无外部依赖(如 `cargo test --lib`)。
+- **L2 集成**:testcontainers 持久化 + **真外部服务 docker compose**。**禁 mockito,禁 mock HTTP 响应**。测试数据用 seed/唯一前缀在真实服务中准备,断言查真实服务状态。
+- **L3 端到端**:真浏览器(Playwright)+ 真服务全栈。**禁 mock**。
+
+## L2 禁 mock 铁律(根因修复)
+
+mock 是 bug 被掩盖的根因(契约/body 不校验致假绿)。L2 必须基于真实启动的服务。前置:外部服务全栈 docker compose 起。
+<!--ELSE-->
+## 层级定义
+
+当前仓未启用三层测试(three-tier-test)。仅 L1 单元测试:纯函数/逻辑,无外部依赖。L2/L3 集成与端到端测试规则见 `docs/rules/testing-rules.md`(启用 three-tier-test 后生成)。
+<!--/IF:three-tier-test-->
+
+## 一致性校验
+
+> 在含 test-spec 的代码仓根目录运行。纯文档仓无 test-spec,跳过此步。
+
+写完测试跑校验(SSOT ID 集合 vs 代码标签集合):
+```bash
+diff <(grep -rhoE 'L[12]-[A-Z0-9]+-[0-9]+' docs/02-design/test-spec/*.md | sort -u) \
+     <(grep -rhoE 'L[12]-[A-Z0-9]+-[0-9]+' tests/ src/ | grep -oE 'L[12]-[A-Z0-9]+-[0-9]+' | sort -u) \
+  && echo "1:1 零差异" || echo "❌ 不一致,构建阻断"
+```
+
+## Done 清单
+
+- [ ] 六步方法论六段全产出(因子/场景/边界/异常/分支/用例)
+- [ ] 每边界值有用例或显式不测原因
+- [ ] 每关键异常有用例或显式不测原因
+- [ ] 用例 ID 方案 `L{层}-{特性}-{序号}`,1:1 ↔ 测试函数
+- [ ] 每测试函数首行 `// 覆盖:<SSOT节> <用例ID>` 标签
+<!--IF:three-tier-test-->
+- [ ] L2 用真外部服务 + testcontainers,无 mockito
+<!--/IF:three-tier-test-->
+- [ ] 一致性校验零差异
+- [ ] test-spec doc 写入 docs/02-design/test-spec/

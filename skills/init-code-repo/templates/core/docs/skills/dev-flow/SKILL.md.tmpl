@@ -1,0 +1,70 @@
+<!--require:dev-flow-skills-->
+---
+name: dev-flow
+description: MUST use before any dev work (创建功能/修bug/改行为/重构). Orchestrates T0-T3 风险分级 → brainstorming → test-spec 设计先行 → writing-plans → TDD 红→绿 → verification(verify-fast/ci/release) → 台账(bugs/debt) → code-review → 提交(lefthook). 项目开发流程入口,在 superpowers 通用流程上做领域包装。
+---
+
+# 项目开发流程入口
+
+> 铁律:测试用例设计(test-spec)先于写码;验收通过才 commit/push。SSOT = 各仓 AGENTS.md + docs/rules/。本 skill 在 superpowers 通用 skill 之上做领域包装,不重写通用 skill,引用 rules 不复制。
+
+## 何时调用
+
+接到任何开发任务:创建功能、修 bug、改行为、重构。创造性工作必先 brainstorm,不可直接写码。
+
+## 流程(10 步)
+
+### 1. T0-T3 风险分级
+按当前仓 AGENTS.md「T0–T3 公共风险分级」判定本任务最高风险特征:
+- T0 只读/微小文档 → 只读不改;微调查 diff/引用/格式
+- T1 局部低风险实现 → `{{VERIFY_FAST_CMD}}` + 相关 L1
+- T2 契约/架构/跨系统 → `make verify-ci` + 相关 L2;安全项人审
+- T3 生产/不可逆 → `ALLOW_REAL_E2E=1 make verify-release` + 所需 L3/回滚;显式逐项授权
+
+### 2. brainstorming(创造性工作必调)
+调 `superpowers:brainstorming`,出设计 spec 写到 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`。
+
+### 3. test-spec 设计先行(铁律:步骤 3 先于步骤 4)
+涉及测试变化时,调 `test-spec` skill 设计/更新 test-spec(六步方法论)。**不允许跳过 test-spec 直接 TDD 写码。**
+
+### 4. writing-plans
+多步任务调 `superpowers:writing-plans` 出实施 plan 到 `docs/superpowers/plans/`。
+
+### 5. TDD 红→绿
+调 `superpowers:test-driven-development`:先写失败测试 → 跑验证失败 → 最小实现 → 跑验证通过。
+
+### 6. verification-before-completion
+按 T 级跑验证(声称完成前必须有实测输出证据,不得纸面「全绿」):
+- T0/T1: `{{VERIFY_FAST_CMD}}`(policy-check + 相关 L1)
+- T2: `make verify-ci`(verify-fast + 全量测试)
+- T3: `ALLOW_REAL_E2E=1 make verify-release`
+调 `superpowers:verification-before-completion`。
+
+### 7. 台账
+- 新 bug → 各仓 `docs/ledger/bugs.md`(13 字段:编号/标题/描述/严重程度/状态/模块/关联用例/关联commit/发现方式/修复人/发现人/发现日期/修复日期)
+- 新债 → `docs/ledger/debt.md`
+- 版本 → `docs/ledger/version-log.md`
+
+### 8. requesting-code-review
+主要功能/合并前调 `superpowers:requesting-code-review`。
+
+### 9. 提交(验收通过才提交)
+- 用户说「验收通过」才 `git add/commit/push`。
+- commit 信息符 `type(scope): subject #issue`(lefthook commit-msg 校验)。
+- lefthook 门禁(gitleaks + verify-fast)自动跑。
+
+### 10. SSOT 文档同步
+实现与设计文档不一致时,反过来刷设计文档(doc-ssot-rules 铁律)。
+
+## Done 清单
+
+- [ ] T0-T3 风险分级已判定,验证级别已定
+- [ ] 创造性工作已 brainstorm,spec 已写
+- [ ] test-spec 已设计/更新(步骤 3 先于 4)
+- [ ] 多步任务已出 plan
+- [ ] TDD 红→绿(先失败测试再实现)
+- [ ] 按 T 级跑验证,有实测输出证据
+- [ ] 台账已更新(bugs/debt/version-log)
+- [ ] code-review 已请求
+- [ ] 验收通过才提交,commit 信息合规
+- [ ] SSOT 文档与实现一致
