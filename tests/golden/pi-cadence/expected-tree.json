@@ -1,0 +1,19 @@
+[
+  ".gitignore",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "docs/02-design/doc-governance.md",
+  "docs/02-design/test-spec/README.md",
+  "docs/HANDOVER.md",
+  "docs/ROADMAP.md",
+  "docs/ledger/archive/.gitkeep",
+  "docs/ledger/bugs.md",
+  "docs/rules/commit-rules.md",
+  "docs/rules/design-completeness-rules.md",
+  "docs/rules/dev-workflow-rules.md",
+  "docs/rules/doc-ssot-rules.md",
+  "docs/superpowers/specs/.gitkeep",
+  "lefthook.yml",
+  "scripts/check-completeness.mjs"
+]

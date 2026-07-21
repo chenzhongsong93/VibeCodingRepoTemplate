@@ -1,0 +1,11 @@
+{
+  "projectName": "DevFlowSkillsApp",
+  "oneLine": "带研发流程 skill 的应用",
+  "year": "2026",
+  "stacks": ["rust"],
+  "repoShape": "single",
+  "runtimes": ["claude-code"],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["dev-flow-skills"]
+}

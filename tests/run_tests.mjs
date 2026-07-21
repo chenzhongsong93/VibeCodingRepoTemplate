@@ -688,3 +688,22 @@ test('pi-cadence: ROADMAP/AGENTS/HANDOVER PI段', () => {
   assertOk(readFileSync(`${tmp}/AGENTS.md`,'utf8').includes('迭代（PI）体系'), 'AGENTS has PI section');
   assertOk(readFileSync(`${tmp}/docs/HANDOVER.md`,'utf8').includes('当前 PI'), 'HANDOVER has 当前 PI');
 });
+
+const GOV_SCENARIOS = ['agent-policy', 'dev-flow-skills', 'pi-cadence', 'full-governance'];
+
+for (const name of GOV_SCENARIOS) {
+  test(`${name}: file tree matches golden`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    assertTreeEqual(fileTree(tmp), JSON.parse(readFileSync(`tests/golden/${name}/expected-tree.json`, 'utf8')), `${name} tree`);
+  });
+
+  test(`${name}: no dead links + clean`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}-clean`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    assert.equal(deadLinks(tmp).length, 0, `${name} dead links`);
+    for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `${name}:${f}`);
+  });
+}

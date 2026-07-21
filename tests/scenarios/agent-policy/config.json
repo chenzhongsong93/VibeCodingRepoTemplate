@@ -1,0 +1,12 @@
+{
+  "projectName": "AgentPolicyApp",
+  "oneLine": "带 agent 策略的应用",
+  "year": "2026",
+  "stacks": ["rust"],
+  "repoShape": "single",
+  "runtimes": ["claude-code"],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-policy"],
+  "branchModel": { "dev": "dev", "main": "main", "fix": "fix", "release": "release/v" }
+}

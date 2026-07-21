@@ -1,0 +1,11 @@
+{
+  "projectName": "FullGovernanceApp",
+  "oneLine": "全治理能力项目",
+  "year": "2026",
+  "stacks": ["rust", "node"],
+  "repoShape": "single",
+  "runtimes": ["claude-code"],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-policy", "dev-flow-skills", "pi-cadence", "full-ledger", "api-docs"]
+}
