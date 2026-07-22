@@ -767,3 +767,37 @@ test('error-log + full-ledger: debt.md link present', () => {
   const dead = deadLinks(tmp);
   assert.equal(dead.length, 0, 'no dead links');
 });
+
+test('worktree-tooling: scripts + config + gitignore', () => {
+  const tmp = '/tmp/init-code-repo-test-worktree';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['worktree-tooling'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('scripts/new-worktree.sh'), 'new-worktree.sh present');
+  assertOk(tree.includes('scripts/cleanup-worktree.sh'), 'cleanup-worktree.sh present');
+  assertOk(tree.includes('AGENTS.config.json'), 'AGENTS.config.json present');
+  assertOk(tree.includes('AGENTS.config.local.json.example'), 'local example present');
+  const nw = readFileSync(`${tmp}/scripts/new-worktree.sh`, 'utf8');
+  assertOk(nw.includes('origin/main'), 'MAIN_BRANCH substituted to origin/main');
+  assertOk(!nw.includes('{{MAIN_BRANCH}}'), 'no leftover MAIN_BRANCH var');
+  assertOk(nw.includes('installCmd'), 'installCmd config-driven');
+  assertOk(!nw.includes('pnpm install'), 'no hardcoded pnpm install');
+  assertOk(!nw.includes('sosoclaw'), 'no baiwang-specific branch');
+  assertClean(nw, 'new-worktree.sh');
+  const cfg = readFileSync(`${tmp}/AGENTS.config.json`, 'utf8');
+  assertOk(cfg.includes('origin/main'), 'config MAIN_BRANCH substituted');
+  // parse config after stripping any require marker line
+  const cfgJson = JSON.parse(cfg.replace(/^<!--.*-->\n/, '').trim());
+  assert.equal(cfgJson.branch.defaultBase, 'origin/main', 'config valid JSON + defaultBase');
+  const gi = readFileSync(`${tmp}/.gitignore`, 'utf8');
+  assertOk(gi.includes('AGENTS.config.local.json'), 'gitignore has local config');
+  assertClean(gi, 'gitignore');
+  // without worktree-tooling → no these files + gitignore no local line
+  const tmp2 = '/tmp/init-code-repo-test-worktree-no';
+  rmSync(tmp2, { recursive: true, force: true });
+  assemble(tmp2, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const t2 = fileTree(tmp2);
+  assertOk(!t2.includes('scripts/new-worktree.sh'), 'no worktree scripts without component');
+  assertOk(!t2.includes('AGENTS.config.json'), 'no AGENTS.config without component');
+  assertOk(!readFileSync(`${tmp2}/.gitignore`,'utf8').includes('AGENTS.config.local.json'), 'gitignore no local without component');
+});
