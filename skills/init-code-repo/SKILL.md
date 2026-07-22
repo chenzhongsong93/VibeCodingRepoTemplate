@@ -33,6 +33,7 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 | 分支模型 | 默认(dev/main/fix/release/v) / 自定义 | agent-policy 激活时填入 {{DEV_BRANCH}}/{{MAIN_BRANCH}}/{{FIX_BRANCH}}/{{RELEASE_PREFIX}} |
 | Policy 标记 | 默认 `{{PROJECT_NAME}}-Agent-Policy: 1.0` / 自定义 | agent-policy 激活时填入 {{POLICY_ID}} |
 | PI 命名格式 | 默认 `YYYY-PI<N>` / 自定义 | pi-cadence 激活时填入 {{PI_FORMAT}} |
+| 上游来源 | 上游仓名 / 基线 commit / 许可证（默认 TODO 占位） | has-upstream 激活时填入 {{UPSTREAM_REPO}}/{{UPSTREAM_BASELINE}}/{{UPSTREAM_LICENSE}} |
 | 文档命名 | 英文 / 中文 / 自定义 | 决定文档文件名风格（工具契约文件 AGENTS.md/CLAUDE.md/README.md/lefthook.yml 等恒英文；docs/ 下文档与 ROADMAP/HANDOVER 等可中文/自定义）|
 | 可选组件 | 多选（见下表） | 决定装配范围与版本派生 |
 
@@ -98,6 +99,9 @@ agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目
 | `{{PI_FORMAT}}` | piFormat | 阶段1录取（默认 YYYY-PI<N>） |
 | `{{PI_FIRST}}` | piFirst | 派生（PI_FORMAT 的 YYYY→YEAR、<N>→1） |
 | `{{VERIFY_FAST_CMD}}` | verifyFastCmd | 派生（node 单栈→npm run verify:fast，否则 make verify-fast） |
+| `{{UPSTREAM_REPO}}` | upstreamRepo | 阶段1录取（上游仓名，默认 TODO 占位） |
+| `{{UPSTREAM_BASELINE}}` | upstreamBaseline | 阶段1录取（上游基线 commit，默认 TODO） |
+| `{{UPSTREAM_LICENSE}}` | upstreamLicense | 阶段1录取（上游许可证，默认 TODO） |
 
 未知占位符保持不变。
 
@@ -128,7 +132,7 @@ zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径
 
 激活集 = 选中组件 + 派生态 + commit 档 + 选中栈。
 
-**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`、`agent-policy`、`dev-flow-skills`、`pi-cadence`。
+**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`、`agent-policy`、`dev-flow-skills`、`pi-cadence`、`has-upstream`、`error-log`、`worktree-tooling`、`deployment-gates`。
 
 > 注：`multi-repo-component`/`central-docs` 由 repoRole 派生（非 components 列表），但作为 cond 名会经 activeConds 透传，故一并列出。
 
@@ -185,6 +189,10 @@ AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HAN
 | Agent 策略与执行门禁 | agent-policy | dev-workflow-rules 治理段 + agent-governance 4 文档 + check-agent-policy.mjs + settings.json 重写 + 各 stack verify 目标 + AGENTS Policy 段 + lefthook verify-fast | 自动被 dev-flow-skills 激活 |
 | 研发流程 skill 三层 | dev-flow-skills | docs/skills/{dev-flow,test-spec,design-review}/SKILL.md + .claude/skills/ 薄入口 + check-test-spec-consistency.mjs + install-skills.sh(central-docs 附加) | 自动激活 agent-policy |
 | 研发迭代(PI)体系 | pi-cadence | ROADMAP/AGENTS/HANDOVER 的 PI 段 | 独立 |
+| 上游 vendoring 治理 | has-upstream | UPSTREAM-SYNC.md + NOTICE | overlay-only 约定 + 回归 diff |
+| 错误记忆台账 | error-log | ERROR_LOG.md | 跨会话过程错误台账 |
+| worktree 生命周期 | worktree-tooling | scripts/{new,cleanup}-worktree.sh + AGENTS.config.json + .local.example | .gitignore 加 local config |
+| 部署门禁 | deployment-gates | Makefile（deployment 专属 verify 目标） | 用于纯部署仓（stacks:[]，无编程栈） |
 
 ### Commit 门禁三档
 

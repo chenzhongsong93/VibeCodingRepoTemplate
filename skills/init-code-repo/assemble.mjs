@@ -64,6 +64,10 @@ export function assemble(targetDir, config) {
   const stacks = config.stacks || [];
   const verifyFastCmd = stacks.length === 1 && stacks[0] === 'node'
     ? 'npm run verify:fast' : 'make verify-fast';
+  const up = config.upstream || {};
+  const upstreamRepo = up.repo || '（TODO: 填上游仓名）';
+  const upstreamBaseline = up.baseline || '（TODO: 填上游基线 commit）';
+  const upstreamLicense = up.license || '（TODO: 填上游许可证，如 Apache-2.0）';
   const ctx = {
     projectName: config.projectName,
     oneLine: config.oneLine,
@@ -71,6 +75,7 @@ export function assemble(targetDir, config) {
     commitRegex: config.commitGate?.regex || '',
     devBranch, mainBranch, fixBranch, releasePrefix,
     policyId, piFormat, piFirst, verifyFastCmd,
+    upstreamRepo, upstreamBaseline, upstreamLicense,
   };
   const conds = [...activeConds(config), ...extraConds(config)];
   const activeSet = new Set(conds);

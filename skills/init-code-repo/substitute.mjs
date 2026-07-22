@@ -11,6 +11,9 @@ const VARS = {
   PI_FORMAT: 'piFormat',
   PI_FIRST: 'piFirst',
   VERIFY_FAST_CMD: 'verifyFastCmd',
+  UPSTREAM_REPO: 'upstreamRepo',
+  UPSTREAM_BASELINE: 'upstreamBaseline',
+  UPSTREAM_LICENSE: 'upstreamLicense',
 };
 
 export function substitute(text, ctx) {
