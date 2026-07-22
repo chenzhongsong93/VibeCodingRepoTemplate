@@ -738,3 +738,32 @@ test('has-upstream: UPSTREAM-SYNC + NOTICE', () => {
   assertOk(nt.includes('upstream-foo') && nt.includes('MIT'), 'NOTICE substituted');
   assertClean(nt, 'NOTICE');
 });
+
+test('error-log: ERROR_LOG structure + naming-aware links', () => {
+  const tmp = '/tmp/init-code-repo-test-error-log';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['error-log'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('ERROR_LOG.md'), 'ERROR_LOG.md present');
+  const el = readFileSync(`${tmp}/ERROR_LOG.md`, 'utf8');
+  assertOk(el.includes('ERR #N'), 'has entry template');
+  assertOk(el.includes('根因'), 'has root-cause field');
+  assertOk(el.includes('教训'), 'has lesson field');
+  assertOk(el.includes('过程错误'), 'distinguishes process error');
+  assertOk(!el.includes('baiwang') && !el.includes('蓝区'), 'no baiwang business');
+  assertClean(el, 'ERROR_LOG');
+  // debt.md link stripped without full-ledger (no dead link)
+  assertOk(!el.includes('debt.md'), 'debt.md link stripped without full-ledger');
+  const dead = deadLinks(tmp);
+  assert.equal(dead.length, 0, 'no dead links');
+});
+
+test('error-log + full-ledger: debt.md link present', () => {
+  const tmp = '/tmp/init-code-repo-test-error-log-fl';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['error-log','full-ledger'] });
+  const el = readFileSync(`${tmp}/ERROR_LOG.md`, 'utf8');
+  assertOk(el.includes('debt.md'), 'debt.md link present with full-ledger');
+  const dead = deadLinks(tmp);
+  assert.equal(dead.length, 0, 'no dead links');
+});
