@@ -1,0 +1,43 @@
+<!--require:has-upstream-->
+# UPSTREAM-SYNC — 上游 {{UPSTREAM_REPO}} 同步说明
+
+## 来源
+
+- 上游仓：`{{UPSTREAM_REPO}}`（本地路径 `<upstream-repo-path>`）
+- 收编基线 commit：`{{UPSTREAM_BASELINE}}`
+- 许可证：{{UPSTREAM_LICENSE}}（见 `LICENSE.upstream` + `NOTICE.upstream`）
+
+## 收编范围
+
+| 目录 | 上游路径 | 本仓路径 | 改动 |
+|---|---|---|---|
+| （TODO: 填目录名） | （TODO: 上游路径） | （TODO: 本仓路径） | （TODO: 原样 / 改动说明） |
+| （TODO: 填目录名） | （TODO: 上游路径） | （TODO: 本仓路径） | （TODO: 原样 / 改动说明） |
+
+**承诺**：上游文件原样保留，仅新增 `*.overlay.*` / `values-overlay.yaml` / `overlay-base` / `overlays/overlay` 等本仓 overlay 层文件，未改上游任何文件。
+
+## 回归基线（验证原样性）
+
+每次收编后或同步上游后，跑以下 diff，应无差异（排除 overlay 层新增文件）：
+
+```bash
+# （TODO: 填收编目录 1，如 docker）
+diff -r <upstream-repo-path>/<上游目录> <本仓目录> \
+  -x '<overlay 排除文件>'
+# （TODO: 填收编目录 2，如 helm）
+diff -r <upstream-repo-path>/<上游目录> <本仓目录> \
+  -x '<overlay 排除文件>'
+# （TODO: 填收编目录 3，如 kustomize；上游无 overlay 层，整体 diff 会多出 overlay 项，属正常新增）
+diff -r <upstream-repo-path>/<上游目录> <本仓目录> \
+  -x 'overlay-base' -x 'overlay'
+```
+
+三条均无输出 = 上游文件未被偷改。
+
+## 同步上游更新流程
+
+1. `cd <upstream-repo-path> && git pull`
+2. 重跑上述三条 diff，看上游改了什么
+3. 人工合入冲突到本仓（仅上游文件，不动 overlay 层）
+4. 更新本文档「收编基线 commit」为新 hash
+5. 提交：`git commit -m "chore: 同步上游 {{UPSTREAM_REPO}}@<new-hash>"`

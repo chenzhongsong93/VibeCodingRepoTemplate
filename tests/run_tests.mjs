@@ -717,3 +717,24 @@ for (const name of GOV_SCENARIOS) {
     for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `${name}:${f}`);
   });
 }
+
+test('has-upstream: UPSTREAM-SYNC + NOTICE', () => {
+  const tmp = '/tmp/init-code-repo-test-has-upstream';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['has-upstream'], upstream:{repo:'upstream-foo', baseline:'abc123', license:'MIT'} });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('UPSTREAM-SYNC.md'), 'UPSTREAM-SYNC.md present');
+  assertOk(tree.includes('NOTICE'), 'NOTICE present');
+  const us = readFileSync(`${tmp}/UPSTREAM-SYNC.md`, 'utf8');
+  assertOk(us.includes('upstream-foo'), 'UPSTREAM_REPO substituted');
+  assertOk(us.includes('abc123'), 'UPSTREAM_BASELINE substituted');
+  assertOk(us.includes('MIT'), 'UPSTREAM_LICENSE substituted');
+  assertOk(us.includes('diff -r'), 'has regression diff flow');
+  assertOk(us.includes('overlay'), 'has overlay convention');
+  assertOk(!us.includes('{{UPSTREAM_REPO}}'), 'no leftover var');
+  assertOk(!us.includes('octo') && !us.includes('baiwang'), 'no baiwang/octo');
+  assertClean(us, 'UPSTREAM-SYNC');
+  const nt = readFileSync(`${tmp}/NOTICE`, 'utf8');
+  assertOk(nt.includes('upstream-foo') && nt.includes('MIT'), 'NOTICE substituted');
+  assertClean(nt, 'NOTICE');
+});
