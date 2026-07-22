@@ -1,0 +1,11 @@
+{
+  "projectName": "DeploymentGatesApp",
+  "oneLine": "含部署门控的应用",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["deployment-gates"]
+}

@@ -718,6 +718,25 @@ for (const name of GOV_SCENARIOS) {
   });
 }
 
+const FOLLOWUP_SCENARIOS = ['has-upstream', 'error-log', 'worktree-tooling', 'deployment-gates', 'full-followups'];
+
+for (const name of FOLLOWUP_SCENARIOS) {
+  test(`${name}: file tree matches golden`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    assertTreeEqual(fileTree(tmp), JSON.parse(readFileSync(`tests/golden/${name}/expected-tree.json`, 'utf8')), `${name} tree`);
+  });
+
+  test(`${name}: no dead links + clean`, () => {
+    const tmp = `/tmp/init-code-repo-test-${name}-clean`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, JSON.parse(readFileSync(`tests/scenarios/${name}/config.json`, 'utf8')));
+    assert.equal(deadLinks(tmp).length, 0, `${name} dead links`);
+    for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`, 'utf8'), `${name}:${f}`);
+  });
+}
+
 test('has-upstream: UPSTREAM-SYNC + NOTICE', () => {
   const tmp = '/tmp/init-code-repo-test-has-upstream';
   rmSync(tmp, { recursive: true, force: true });

@@ -1,0 +1,11 @@
+{
+  "projectName": "ErrorLogApp",
+  "oneLine": "含过程错误台账的应用",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["error-log"]
+}

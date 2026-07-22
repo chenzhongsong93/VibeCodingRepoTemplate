@@ -1,0 +1,11 @@
+{
+  "projectName": "WorktreeToolingApp",
+  "oneLine": "含 worktree 脚手架的应用",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["worktree-tooling"]
+}

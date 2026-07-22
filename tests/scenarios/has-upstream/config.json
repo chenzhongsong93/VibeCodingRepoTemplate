@@ -1,0 +1,12 @@
+{
+  "projectName": "HasUpstreamApp",
+  "oneLine": "含上游 vendoring 的应用",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "none",
+  "commitGate": { "mode": "default" },
+  "components": ["has-upstream"],
+  "upstream": { "repo": "upstream-lib", "baseline": "a1b2c3d", "license": "Apache-2.0" }
+}

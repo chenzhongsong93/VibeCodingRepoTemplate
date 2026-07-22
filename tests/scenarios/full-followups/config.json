@@ -1,0 +1,13 @@
+{
+  "projectName": "FullFollowupsApp",
+  "oneLine": "四项后续能力 + 治理套件全装载",
+  "year": "2026",
+  "stacks": [],
+  "repoShape": "single",
+  "runtimes": ["claude-code"],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["has-upstream", "error-log", "worktree-tooling", "deployment-gates", "agent-policy", "dev-flow-skills"],
+  "upstream": { "repo": "upstream-lib", "baseline": "a1b2c3d", "license": "Apache-2.0" },
+  "branchModel": { "dev": "dev" }
+}
