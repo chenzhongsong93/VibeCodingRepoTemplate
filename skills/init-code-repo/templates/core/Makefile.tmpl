@@ -1,0 +1,43 @@
+<!--require:deployment-gates-->
+SHELL := /bin/sh
+.DEFAULT_GOAL := help
+
+# TODO: 填 kustomize 目标，如 infra/kustomize/overlays/dev
+KUSTOMIZE_TARGETS :=
+# TODO: 填 helm chart 路径，如 infra/helm/<chart>
+HELM_CHARTS :=
+
+.PHONY: help verify-fast verify-ci verify-k8s verify-release
+
+help:
+	@echo "verify-fast     快速静态门禁（whitespace + policy + shell/JSON 语法）"
+	@echo "verify-ci       全量静态解析（+ kustomize 渲染）"
+	@echo "verify-k8s      helm chart lint + 渲染（helm 未装则跳过）"
+	@echo "verify-release  显式授权后运行 E2E"
+
+verify-fast:
+	@git diff HEAD --check
+<!--IF:agent-policy-->
+	@node scripts/check-agent-policy.mjs .
+<!--/IF:agent-policy-->
+	@[ -d infra ] && find infra -type f -name '*.sh' -exec bash -n {} + || true
+	@[ -d infra ] && find infra -type f -name '*.json' -exec python3 -m json.tool {} >/dev/null \; || true
+	@echo "[verify-fast] OK"
+
+verify-ci: verify-fast
+	@set -eu; for target in $(KUSTOMIZE_TARGETS); do \
+		kubectl kustomize "$$target" >/dev/null; \
+	done
+	@echo "[verify-ci] OK"
+
+verify-k8s:
+	@command -v helm >/dev/null || { echo "[verify-k8s] helm 未安装，跳过（非阻断）"; exit 0; }
+	@set -eu; for chart in $(HELM_CHARTS); do \
+		helm lint "$$chart" >/dev/null; \
+		helm template "$$chart" >/dev/null; \
+	done
+	@echo "[verify-k8s] OK"
+
+verify-release: verify-ci
+	@test "$${ALLOW_REAL_E2E:-}" = "1" || { echo "拒绝运行：verify-release 会跑真实 E2E；确认授权后设置 ALLOW_REAL_E2E=1" >&2; exit 2; }
+	@# TODO: e2e 脚本（如 cd infra && ./run_e2e.sh）

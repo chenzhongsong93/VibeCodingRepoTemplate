@@ -801,3 +801,43 @@ test('worktree-tooling: scripts + config + gitignore', () => {
   assertOk(!t2.includes('AGENTS.config.json'), 'no AGENTS.config without component');
   assertOk(!readFileSync(`${tmp2}/.gitignore`,'utf8').includes('AGENTS.config.local.json'), 'gitignore no local without component');
 });
+
+test('deployment-gates: Makefile verify targets', () => {
+  const tmp = '/tmp/init-code-repo-test-deployment';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['deployment-gates'] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('Makefile'), 'Makefile present');
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('verify-fast:'), 'has verify-fast');
+  assertOk(mk.includes('verify-ci:'), 'has verify-ci');
+  assertOk(mk.includes('verify-k8s:'), 'has verify-k8s');
+  assertOk(mk.includes('verify-release:'), 'has verify-release');
+  assertOk(mk.includes('ALLOW_REAL_E2E'), 'has ALLOW_REAL_E2E guard');
+  assertOk(mk.includes('[ -d infra ]'), 'has infra guard');
+  assertOk(mk.includes('KUSTOMIZE_TARGETS'), 'has kustomize TODO');
+  assertOk(mk.includes('HELM_CHARTS'), 'has helm TODO');
+  assertOk(!mk.includes('octo') && !mk.includes('baiwang'), 'no baiwang/octo');
+  assertOk(!mk.includes('check-agent-policy.mjs'), 'no policy-check without agent-policy');
+  assertClean(mk, 'deployment Makefile');
+  // verify-fast runnable (infra absent, guard skips) — only if make available.
+  // Requires a git repo with HEAD: `git diff HEAD --check` errors outside a repo
+  // (matches real usage — Makefile runs inside an initialized repo).
+  const makeAvail = spawnSync('sh', ['-c', 'command -v make'], { encoding: 'utf8' });
+  if (makeAvail.status === 0 && makeAvail.stdout.trim()) {
+    spawnSync('git', ['-C', tmp, 'init', '-q'], { encoding: 'utf8' });
+    spawnSync('git', ['-C', tmp, 'add', '-A'], { encoding: 'utf8' });
+    spawnSync('git', ['-C', tmp, 'commit', '-q', '-m', 'init', '--no-gpg-sign'], { encoding: 'utf8' });
+    const r = spawnSync('make', ['-C', tmp, 'verify-fast'], { encoding: 'utf8' });
+    assert.equal(r.status, 0, `verify-fast exits 0; stderr: ${String(r.stderr)}`);
+  }
+});
+
+test('deployment-gates + agent-policy: policy-check injected', () => {
+  const tmp = '/tmp/init-code-repo-test-deployment-ap';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[], repoShape:'single', runtimes:['claude-code'], remote:'none', commitGate:{mode:'default'}, components:['deployment-gates','agent-policy'] });
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('check-agent-policy.mjs'), 'policy-check injected with agent-policy');
+  assertClean(mk, 'deployment+agent-policy Makefile');
+});
