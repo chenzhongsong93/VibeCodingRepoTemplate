@@ -29,11 +29,10 @@
 
 ```mermaid
 flowchart TD
-    A[init-code-repo<br/>骨架+规范：SSOT 文档结构 / 研发流程 / 质量门禁]
-    A -->|装好骨架后调用| B[dev-conductor<br/>指挥：读完整性门控逐项驱动]
-    B -->|Stage 设计| C[superpowers:brainstorming<br/>填设计文档]
-    B -->|Stage 落地| D[superpowers:writing-plans → executing-plans → TDD<br/>写代码并红→绿]
-    A -.SKILL.md + templates/ 装配契约.-> A
+    A["init-code-repo<br/>骨架+规范：SSOT 文档结构 / 研发流程 / 质量门禁"]
+    A -->|"装好骨架后调用"| B["dev-conductor<br/>指挥：读完整性门控逐项驱动"]
+    B -->|"Stage 设计"| C["superpowers:brainstorming<br/>填设计文档"]
+    B -->|"Stage 落地"| D["superpowers:writing-plans → executing-plans → TDD<br/>写代码并红→绿"]
 ```
 
 ## ✨ 特性
