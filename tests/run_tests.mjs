@@ -396,6 +396,7 @@ test('agent-policy: node-frontend package.json verify scripts valid JSON both mo
   assertOk(pj.scripts['verify:release'].includes('ALLOW_REAL_E2E'), 'node-frontend verify:release has guard');
   assertOk(pj.scripts['verify:fast'].includes('check-agent-policy'), 'node-frontend verify:fast calls check-agent-policy');
   assertOk(pj.scripts.lint, 'lint still present');
+  assertOk(pj.scripts.dev === 'vite', 'node-frontend has dev script (both modes)');
   // without agent-policy → no verify scripts, valid JSON
   const tmpNode2 = '/tmp/init-code-repo-test-verify-node-fe-no';
   rmSync(tmpNode2, { recursive: true, force: true });
@@ -403,6 +404,7 @@ test('agent-policy: node-frontend package.json verify scripts valid JSON both mo
   const pj2 = JSON.parse(readFileSync(`${tmpNode2}/package.json`, 'utf8'));
   assertOk(!pj2.scripts['verify:fast'], 'no verify:fast without agent-policy');
   assertOk(pj2.scripts.lint, 'lint still present without agent-policy');
+  assertOk(pj2.scripts.dev === 'vite', 'node-frontend has dev script (both modes)');
   assertClean(readFileSync(`${tmpNode2}/package.json`, 'utf8'), 'node-frontend package.json no-ap clean');
 });
 
@@ -961,6 +963,9 @@ test('node-frontend: package.json + Makefile + tsconfig present', () => {
   const ts = readFileSync(`${tmp}/tsconfig.json`, 'utf8');
   assertOk(ts.includes('jsx'), 'tsconfig frontend jsx');
   assertClean(ts, 'node-frontend tsconfig');
+  const pj = JSON.parse(readFileSync(`${tmp}/package.json`, 'utf8'));
+  assertOk(pj.scripts.dev, 'node-frontend has dev script (vite)');
+  assertOk(pj.scripts.dev === 'vite', 'dev script is vite');
 });
 
 test('node-backend: file tree matches golden', () => {
