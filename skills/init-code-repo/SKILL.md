@@ -24,7 +24,7 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 |---|---|---|
 | 项目名 | 自由文本 | 填入 {{PROJECT_NAME}} |
 | 一句话定位 | 自由文本 | 填入 {{ONE_LINE}} |
-| 主栈 | 无 / rust / node-frontend / node-backend / python / go / java / 多栈 | 决定叠加哪些 stacks/；node 拆前端/后端子栈 |
+| 主栈 | 无 / rust / node-frontend / node-backend / python / go / java / 多栈 | 决定叠加哪些 stacks/；node 拆前端/后端子栈。**注意：node-frontend 与 node-backend 互斥**——两者同选时 package.json/tsconfig.json 会同名覆盖（writeTree 写根路径，后写覆盖先写，EL-004 同类残留；Makefile 已合并到 shared 不受影响）。前后端共存的 monorepo 需单独立 spec 设计 per-stack 命名空间。 |
 | 仓形态 | 单 app / monorepo | 决定布局 |
 | 仓角色 | 单仓 / 组件仓 / 中央 docs 仓 | 决定多仓模式：单仓=自包含；组件仓=带 component.yaml + 跨仓引用；中央 docs 仓=聚合脚本 + 跨仓视图 |
 | 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |

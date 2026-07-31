@@ -164,3 +164,49 @@
 - 根因文件：`skills/init-code-repo/assemble.mjs:88-92`（writeTree 遍历 stacks 写根路径）。
 - 受影响 scenario：multi-stack / full-governance / full-product（含 rust+node-frontend）。Task 10 扩展四栈（rust+node-frontend+java+go）将加剧冲突——四个 stack 都有 Makefile.tmpl。
 - 已修复（方案 A：共享 Makefile 模板 + 条件分段）：新建 templates/shared/Makefile.tmpl，6 栈命令按 <!--IF:栈--> 分段合并；assemble.mjs 加 shared writeTree（stacks 非空时写）；从 stacks/<栈>/ 移走 Makefile。预防措施落实：multi-stack golden 加四栈命令共存断言 + Makefile 内容 snapshot。commit 095dee6。
+
+---
+
+## EL-005：node-frontend + node-backend 同选时 package.json/tsconfig.json 同名覆盖（EL-004 同类残留）
+
+**发现时间**：2026-07-31
+**发现场景**：多语言栈支持对齐 final code review
+
+### 错误表现
+
+EL-004 修复只合并了 Makefile（到 templates/shared/），未处理 package.json/tsconfig.json。stacks:['node-frontend','node-backend']（前后端共存 monorepo）时，writeTree 仍把两栈的 package.json.tmpl/tsconfig.json.tmpl 写到目标仓根，后写覆盖先写——最终产物 package.json 是 node-backend 的（`build: tsc`/`start: tsx`，丢失前端 `vite build`/`dev`），tsconfig 是后端的（NodeNext/outDir，丢失前端 jsx/DOM）。shared Makefile 里 lint/test/build 段也各重复 2 行（fe 段 + be 段都激活）。
+
+### 根因
+
+与 EL-004 同根：writeTree 写入路径 `join(targetDir, outRelMapped)` 对所有 stack 用根路径，无 per-stack 命名空间。Makefile 已通过"合并到 shared 单模板 + 条件分段"解决，但 package.json/tsconfig.json 是各栈独立的 JSON（结构不同：前端 vite/jsx/DOM vs 后端 tsx/NodeNext），无法像 Makefile 那样简单分段合并。
+
+### 影响边界
+
+- **当前无 scenario 同时选 node-frontend + node-backend**（已核实 8+ scenario 均单选其一）。
+- **单栈场景无问题**。
+- **前后端共存 monorepo**（合理场景）会触发：package.json/tsconfig 覆盖 + Makefile lint 重复。
+- lefthook 钩子层不丢（node 派生态触发 web-lint/web-fmt，按 cond 激活不覆盖）。
+
+### 严重度
+
+**低**（当前无 scenario 触发）。但违背"前后端共存"诉求时需处理。
+
+### 预防措施（规则）
+
+- **短期**：SKILL.md 阶段1主栈选项表已注明"node-frontend 与 node-backend 互斥"——录取时若用户同时选，停下提示互斥约束。
+- **长期**：若需支持 fe+be monorepo，单独立 spec 设计 per-stack 命名空间。候选方案：
+  - ① per-stack 子目录（`frontend/package.json` + `backend/package.json`，根 Makefile `make -C frontend lint` 聚合）——破坏现有根 Makefile 契约，改动大。
+  - ② package.json 合并策略（writeTree 对 JSON 同名文件做语义合并）——污染通用装配器，不推荐（EL-004 方案 B 否决理由）。
+  - ③ monorepo 专用 scenario（repoShape:monorepo 时各 stack 写到 `apps/<stack>/` 子目录）——最贴合 monorepo 语义，但需改 writeTree 的目标路径派生。
+
+### 如何避免
+
+- 录取阶段检查：用户选 node 时，二选一（前端或后端），不同时选。
+- 若用户明确要前后端共存，引导走 monorepo per-stack 子目录方案（待立 spec）。
+
+### 相关
+
+- 发现：final code review（commit 095dee6 后）。
+- 根因文件：`skills/init-code-repo/assemble.mjs:89-91`（writeTree stacks 循环，与 EL-004 同根）。
+- SKILL.md 互斥说明：阶段1主栈选项表（commit 待回填）。
+- 待修：单独立 spec 设计 per-stack 命名空间（monorepo 场景）。
