@@ -1,0 +1,11 @@
+{
+  "projectName": "BackendSvc",
+  "oneLine": "Node 后端服务",
+  "year": "2026",
+  "stacks": ["node-backend"],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-conduct", "clean-code", "full-ledger", "doc-sync"]
+}

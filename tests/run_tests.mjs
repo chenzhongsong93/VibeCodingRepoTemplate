@@ -948,3 +948,33 @@ test('node-frontend: package.json + Makefile + tsconfig present', () => {
   assertOk(ts.includes('jsx'), 'tsconfig frontend jsx');
   assertClean(ts, 'node-frontend tsconfig');
 });
+
+test('node-backend: file tree matches golden', () => {
+  const tmp = '/tmp/init-code-repo-test-node-backend';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/node-backend/config.json', 'utf8')));
+  assertTreeEqual(fileTree(tmp), JSON.parse(readFileSync('tests/golden/node-backend/expected-tree.json', 'utf8')), 'node-backend tree');
+});
+
+test('node-backend: no vite, has tsx run, tsconfig node lib', () => {
+  const tmp = '/tmp/init-code-repo-test-node-backend-content';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/node-backend/config.json', 'utf8')));
+  const pj = JSON.parse(readFileSync(`${tmp}/package.json`, 'utf8'));
+  assertOk(pj.devDependencies && pj.devDependencies.vite === undefined, 'node-backend no vite dep');
+  assertOk(pj.devDependencies && pj.devDependencies['tsx'], 'node-backend has tsx');
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('tsx src/index.ts'), 'node-backend run tsx');
+  assertClean(mk, 'node-backend Makefile');
+  const ts = readFileSync(`${tmp}/tsconfig.json`, 'utf8');
+  assertOk(!ts.includes('DOM'), 'node-backend tsconfig no DOM lib');
+  assertClean(ts, 'node-backend tsconfig');
+});
+
+test('node-backend: no dead links + clean', () => {
+  const tmp = '/tmp/init-code-repo-test-node-backend-clean';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/node-backend/config.json', 'utf8')));
+  assert.equal(deadLinks(tmp).length, 0, 'node-backend dead links');
+  for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `node-backend:${f}`);
+});

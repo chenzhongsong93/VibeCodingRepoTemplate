@@ -1,0 +1,32 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+<!--IF:agent-policy-->
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "test": "vitest run",
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "verify:fast": "node scripts/check-agent-policy.mjs . && git diff HEAD --check && eslint . && vitest run --quick",
+    "verify:ci": "npm run verify:fast && vitest run",
+    "verify:release": "test \"$ALLOW_REAL_E2E\" = \"1\" && npm run verify:ci && npm run build || (echo 需 ALLOW_REAL_E2E=1 && exit 2)"
+<!--ELSE-->
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "test": "vitest run",
+    "build": "tsc",
+    "start": "tsx src/index.ts"
+<!--/IF:agent-policy-->
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0",
+    "vitest": "^2.0.0",
+    "@types/node": "^22.0.0"
+  }
+}
