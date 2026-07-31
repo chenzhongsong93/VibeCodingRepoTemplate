@@ -34,5 +34,6 @@
   "pre-receive-remote/pre-receive",
   "scripts/check-agent-policy.mjs",
   "scripts/check-completeness.mjs",
-  "scripts/check-test-spec-consistency.mjs"
+  "scripts/check-test-spec-consistency.mjs",
+  "tsconfig.json"
 ]

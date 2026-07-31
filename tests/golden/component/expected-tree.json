@@ -2,6 +2,7 @@
   ".gitignore",
   "AGENTS.md",
   "CLAUDE.md",
+  "Makefile",
   "README.md",
   "doc/component.yaml",
   "docs/02-design/api/api-reference.md",
@@ -20,5 +21,6 @@
   "lefthook.yml",
   "package.json",
   "pre-receive-remote/pre-receive",
-  "scripts/check-completeness.mjs"
+  "scripts/check-completeness.mjs",
+  "tsconfig.json"
 ]

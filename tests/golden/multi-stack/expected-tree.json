@@ -20,5 +20,6 @@
   "lefthook.yml",
   "package.json",
   "pre-receive-remote/pre-receive",
-  "scripts/check-completeness.mjs"
+  "scripts/check-completeness.mjs",
+  "tsconfig.json"
 ]

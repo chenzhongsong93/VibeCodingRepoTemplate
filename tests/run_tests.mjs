@@ -371,25 +371,25 @@ test('agent-policy: rust Makefile verify targets', () => {
   assertClean(mk2, 'rust Makefile no-ap');
 });
 
-test('agent-policy: node package.json verify scripts valid JSON both modes', () => {
-  // node package.json valid JSON both modes (whole-scripts IF/ELSE override)
-  const tmpNode = '/tmp/init-code-repo-test-verify-node';
+test('agent-policy: node-frontend package.json verify scripts valid JSON both modes', () => {
+  // node-frontend package.json valid JSON both modes (whole-scripts IF/ELSE override)
+  const tmpNode = '/tmp/init-code-repo-test-verify-node-fe';
   rmSync(tmpNode, { recursive: true, force: true });
-  assemble(tmpNode, { projectName:'P', oneLine:'L', year:'2026', stacks:['node'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
+  assemble(tmpNode, { projectName:'P', oneLine:'L', year:'2026', stacks:['node-frontend'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
   const pj = JSON.parse(readFileSync(`${tmpNode}/package.json`, 'utf8'));
-  assertOk(pj.scripts['verify:fast'], 'node has verify:fast');
-  assertOk(pj.scripts['verify:release'], 'node has verify:release');
-  assertOk(pj.scripts['verify:release'].includes('ALLOW_REAL_E2E'), 'node verify:release has guard');
-  assertOk(pj.scripts['verify:fast'].includes('check-agent-policy'), 'node verify:fast calls check-agent-policy');
+  assertOk(pj.scripts['verify:fast'], 'node-frontend has verify:fast');
+  assertOk(pj.scripts['verify:release'], 'node-frontend has verify:release');
+  assertOk(pj.scripts['verify:release'].includes('ALLOW_REAL_E2E'), 'node-frontend verify:release has guard');
+  assertOk(pj.scripts['verify:fast'].includes('check-agent-policy'), 'node-frontend verify:fast calls check-agent-policy');
   assertOk(pj.scripts.lint, 'lint still present');
   // without agent-policy → no verify scripts, valid JSON
-  const tmpNode2 = '/tmp/init-code-repo-test-verify-node-no';
+  const tmpNode2 = '/tmp/init-code-repo-test-verify-node-fe-no';
   rmSync(tmpNode2, { recursive: true, force: true });
-  assemble(tmpNode2, { projectName:'P', oneLine:'L', year:'2026', stacks:['node'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  assemble(tmpNode2, { projectName:'P', oneLine:'L', year:'2026', stacks:['node-frontend'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
   const pj2 = JSON.parse(readFileSync(`${tmpNode2}/package.json`, 'utf8'));
   assertOk(!pj2.scripts['verify:fast'], 'no verify:fast without agent-policy');
   assertOk(pj2.scripts.lint, 'lint still present without agent-policy');
-  assertClean(readFileSync(`${tmpNode2}/package.json`, 'utf8'), 'node package.json no-ap clean');
+  assertClean(readFileSync(`${tmpNode2}/package.json`, 'utf8'), 'node-frontend package.json no-ap clean');
 });
 
 test('agent-policy: go + python + java Makefile verify targets', () => {

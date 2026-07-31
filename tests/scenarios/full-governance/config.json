@@ -2,7 +2,7 @@
   "projectName": "FullGovernanceApp",
   "oneLine": "全治理能力项目",
   "year": "2026",
-  "stacks": ["rust", "node"],
+  "stacks": ["rust", "node-frontend"],
   "repoShape": "single",
   "runtimes": ["claude-code"],
   "remote": "github",

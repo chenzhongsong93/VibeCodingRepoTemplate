@@ -2,7 +2,7 @@
   "projectName": "FullProduct",
   "oneLine": "产品级项目",
   "year": "2026",
-  "stacks": ["rust", "node"],
+  "stacks": ["rust", "node-frontend"],
   "repoShape": "monorepo",
   "runtimes": ["claude-code"],
   "remote": "gitcode",

@@ -2,7 +2,7 @@
   "projectName": "comp-svc",
   "oneLine": "组件服务",
   "year": "2026",
-  "stacks": ["node"],
+  "stacks": ["node-frontend"],
   "repoShape": "single",
   "runtimes": [],
   "remote": "github",

@@ -2,7 +2,7 @@
   "projectName": "MultiStack",
   "oneLine": "多栈 monorepo",
   "year": "2026",
-  "stacks": ["rust", "node"],
+  "stacks": ["rust", "node-frontend"],
   "repoShape": "monorepo",
   "runtimes": [],
   "remote": "github",
