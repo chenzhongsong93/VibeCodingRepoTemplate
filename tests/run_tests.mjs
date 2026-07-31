@@ -860,3 +860,12 @@ test('deployment-gates + agent-policy: policy-check injected', () => {
   assertOk(mk.includes('check-agent-policy.mjs'), 'policy-check injected with agent-policy');
   assertClean(mk, 'deployment+agent-policy Makefile');
 });
+
+test('node-frontend stack derives node cond (lefthook web-lint present)', () => {
+  const tmp = '/tmp/init-code-repo-test-node-fe-derive';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['node-frontend'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const lh = readFileSync(`${tmp}/lefthook.yml`, 'utf8');
+  assertOk(lh.includes('eslint'), 'node-frontend derives node cond → web-lint present');
+  assertClean(lh, 'node-frontend lefthook');
+});

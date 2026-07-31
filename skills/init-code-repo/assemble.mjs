@@ -21,7 +21,10 @@ function extraConds(config) {
   if (mode === 'default') conds.push('commit-default');
   else if (mode === 'custom') conds.push('commit-custom');
   else if (mode === 'none') conds.push('commit-none');
-  for (const s of config.stacks || []) conds.push(s);
+  const stacks = config.stacks || [];
+  for (const s of stacks) conds.push(s);
+  // node 派生态:node-frontend / node-backend 共享 lefthook 的 <!--IF:node--> 块
+  if (stacks.includes('node-frontend') || stacks.includes('node-backend')) conds.push('node');
   for (const r of config.runtimes || []) conds.push(r);
   if (config.repoRole === 'component') conds.push('multi-repo-component');
   if (config.repoRole === 'central-docs') conds.push('central-docs');
@@ -62,8 +65,9 @@ export function assemble(targetDir, config) {
   const piFormat = config.piFormat || 'YYYY-PI<N>';
   const piFirst = piFormat.replace('YYYY', String(config.year)).replace('<N>', '1');
   const stacks = config.stacks || [];
-  const verifyFastCmd = stacks.length === 1 && stacks[0] === 'node'
-    ? 'npm run verify:fast' : 'make verify-fast';
+  const isNodeOnly = stacks.length === 1
+    && (stacks[0] === 'node-frontend' || stacks[0] === 'node-backend');
+  const verifyFastCmd = isNodeOnly ? 'npm run verify:fast' : 'make verify-fast';
   const up = config.upstream || {};
   const upstreamRepo = up.repo || '（TODO: 填上游仓名）';
   const upstreamBaseline = up.baseline || '（TODO: 填上游基线 commit）';
