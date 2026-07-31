@@ -1,0 +1,11 @@
+{
+  "projectName": "JavaApp",
+  "oneLine": "Java Maven 服务",
+  "year": "2026",
+  "stacks": ["java"],
+  "repoShape": "single",
+  "runtimes": [],
+  "remote": "github",
+  "commitGate": { "mode": "default" },
+  "components": ["agent-conduct", "clean-code", "full-ledger", "doc-sync", "api-docs"]
+}

@@ -392,8 +392,8 @@ test('agent-policy: node package.json verify scripts valid JSON both modes', () 
   assertClean(readFileSync(`${tmpNode2}/package.json`, 'utf8'), 'node package.json no-ap clean');
 });
 
-test('agent-policy: go + python Makefile verify targets', () => {
-  for (const stack of ['go', 'python']) {
+test('agent-policy: go + python + java Makefile verify targets', () => {
+  for (const stack of ['go', 'python', 'java']) {
     const tmp = `/tmp/init-code-repo-test-verify-${stack}`;
     rmSync(tmp, { recursive: true, force: true });
     assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[stack], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:['agent-policy'] });
@@ -894,4 +894,41 @@ test('lefthook: python/go/java blocks present when stack active', () => {
     if (stack === 'java') { assertOk(lh.includes('spotless:check'), `${stack} spotless`); assertOk(lh.includes('checkstyle:check'), `${stack} checkstyle`); }
     assertClean(lh, `${stack} lefthook`);
   }
+});
+
+test('java-stack: file tree matches golden', () => {
+  const tmp = '/tmp/init-code-repo-test-java-stack';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/java-stack/config.json', 'utf8')));
+  assertTreeEqual(fileTree(tmp), JSON.parse(readFileSync('tests/golden/java-stack/expected-tree.json', 'utf8')), 'java-stack tree');
+});
+
+test('java-stack: pom.xml + Makefile verify targets + lefthook java', () => {
+  const tmp = '/tmp/init-code-repo-test-java-stack-content';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/java-stack/config.json', 'utf8')));
+  const pom = readFileSync(`${tmp}/pom.xml`, 'utf8');
+  assertOk(pom.includes('<artifactId>JavaApp</artifactId>'), 'pom artifactId substituted');
+  assertOk(pom.includes('spotless-maven-plugin'), 'pom has spotless');
+  assertOk(pom.includes('checkstyle'), 'pom has checkstyle');
+  assertOk(pom.includes('spotbugs'), 'pom has spotbugs');
+  assertOk(!pom.includes('{{PROJECT_NAME}}'), 'pom no leftover var');
+  assertOk(!pom.includes('{{GROUP_ID}}'), 'pom no leftover GROUP_ID');
+  assertClean(pom, 'java pom.xml');
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('mvn spotless:check'), 'Makefile lint');
+  assertOk(mk.includes('mvn test'), 'Makefile test');
+  assertOk(mk.includes('mvn package'), 'Makefile build');
+  assertClean(mk, 'java Makefile');
+  const lh = readFileSync(`${tmp}/lefthook.yml`, 'utf8');
+  assertOk(lh.includes('spotless:check'), 'lefthook java-fmt');
+  assertOk(lh.includes('checkstyle:check'), 'lefthook java-checkstyle');
+});
+
+test('java-stack: no dead links + clean', () => {
+  const tmp = '/tmp/init-code-repo-test-java-stack-clean';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/java-stack/config.json', 'utf8')));
+  assert.equal(deadLinks(tmp).length, 0, 'java-stack dead links');
+  for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `java-stack:${f}`);
 });
