@@ -978,3 +978,21 @@ test('node-backend: no dead links + clean', () => {
   assert.equal(deadLinks(tmp).length, 0, 'node-backend dead links');
   for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `node-backend:${f}`);
 });
+
+test('go: go.mod present + Makefile golangci-lint fallback + build target fixed', () => {
+  const tmp = '/tmp/init-code-repo-test-go-stack';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'GoApp', oneLine:'L', year:'2026', stacks:['go'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('go.mod'), 'go.mod present');
+  const gomod = readFileSync(`${tmp}/go.mod`, 'utf8');
+  assertOk(gomod.includes('module GoApp'), 'go.mod module substituted');
+  assertOk(!gomod.includes('{{PROJECT_NAME}}'), 'go.mod no leftover var');
+  assertClean(gomod, 'go.mod');
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('golangci-lint'), 'Makefile golangci-lint');
+  assertOk(mk.includes('command -v golangci-lint'), 'Makefile golangci-lint fallback guard');
+  assertOk(mk.includes('go build -o bin/GoApp .'), 'build target fixed (single . not ./...)');
+  assertOk(!mk.includes('go build -o bin/GoApp ./...'), 'no broken ./... with -o');
+  assertClean(mk, 'go Makefile');
+});
