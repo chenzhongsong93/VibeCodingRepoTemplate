@@ -24,7 +24,7 @@ description: Scaffold a new code repo with SSOT doc structure + R&D process + qu
 |---|---|---|
 | 项目名 | 自由文本 | 填入 {{PROJECT_NAME}} |
 | 一句话定位 | 自由文本 | 填入 {{ONE_LINE}} |
-| 主栈 | 无 / rust / node / python / go / 多栈 | 决定叠加哪些 stacks/ |
+| 主栈 | 无 / rust / node-frontend / node-backend / python / go / java / 多栈 | 决定叠加哪些 stacks/；node 拆前端/后端子栈 |
 | 仓形态 | 单 app / monorepo | 决定布局 |
 | 仓角色 | 单仓 / 组件仓 / 中央 docs 仓 | 决定多仓模式：单仓=自包含；组件仓=带 component.yaml + 跨仓引用；中央 docs 仓=聚合脚本 + 跨仓视图 |
 | 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |
@@ -98,7 +98,7 @@ agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目
 | `{{POLICY_ID}}` | policyId | 阶段1录取（默认 {{PROJECT_NAME}}-Agent-Policy: 1.0） |
 | `{{PI_FORMAT}}` | piFormat | 阶段1录取（默认 YYYY-PI<N>） |
 | `{{PI_FIRST}}` | piFirst | 派生（PI_FORMAT 的 YYYY→YEAR、<N>→1） |
-| `{{VERIFY_FAST_CMD}}` | verifyFastCmd | 派生（node 单栈→npm run verify:fast，否则 make verify-fast） |
+| `{{VERIFY_FAST_CMD}}` | verifyFastCmd | 派生（node-frontend 或 node-backend 单栈→npm run verify:fast，否则 make verify-fast） |
 | `{{UPSTREAM_REPO}}` | upstreamRepo | 阶段1录取（上游仓名，默认 TODO 占位） |
 | `{{UPSTREAM_BASELINE}}` | upstreamBaseline | 阶段1录取（上游基线 commit，默认 TODO） |
 | `{{UPSTREAM_LICENSE}}` | upstreamLicense | 阶段1录取（上游许可证，默认 TODO） |
@@ -146,7 +146,9 @@ zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径
 - `custom` → `commit-custom`
 - `none` → `commit-none`
 
-**栈**（按 stacks 列表）：`rust` / `node` / `python` / `go`。
+**栈**（按 stacks 列表）：`rust` / `node-frontend` / `node-backend` / `python` / `go` / `java`。
+
+**node 派生态**：`node` = stacks 含 `node-frontend` 或 `node-backend`（lefthook 的 `<!--IF:node-->` 块由派生 cond 触发，模板条件块名不改）。
 
 ### 5. 写入路径
 

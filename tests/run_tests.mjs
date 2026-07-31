@@ -291,6 +291,8 @@ test('SKILL.md: exists and documents assembly contract', () => {
   assertOk(skill.includes('<!--require:cond-->'), 'SKILL documents require markers');
   assertOk(skill.includes('激活集推导'), 'SKILL documents cond derivation');
   assertOk(skill.includes('死链校验'), 'SKILL documents dead-link check');
+  assertOk(skill.includes('java') && skill.includes('node-frontend') && skill.includes('node-backend'), 'SKILL 主栈表含 java/node-frontend/node-backend');
+  assertOk(skill.includes('node 派生态'), 'SKILL 文档 node 派生态');
 });
 
 test('runtime adapters: claude-code produces .claude/settings.json, others produce nothing', () => {
