@@ -119,3 +119,48 @@
 
 - 修复 commit `1ea5d60`（包裹链接文字 + 修 sed 误伤的 JS 字符串）。
 - 三占位符见 `skills/init-code-repo/naming.mjs`。
+
+---
+
+## EL-004：多栈 Makefile 同名覆盖——writeTree 无 per-stack 命名空间
+
+**发现时间**：2026-07-31
+**发现场景**：多语言栈支持对齐（Node 拆分 node-frontend/node-backend）Task 9 迁移期间 code review
+
+### 错误表现
+
+`assemble.mjs` 的 `writeTree` 按 `config.stacks` 顺序遍历，每个 stack 的 `templates/stacks/<栈>/*.tmpl` 写到**目标仓根**。多个 stack 都有 `Makefile.tmpl` 时（如 rust+node-frontend+java+go 四栈），**后写的覆盖先写的**，最终产物只有一个 Makefile（最后那个 stack 的），其余 stack 的 Makefile 门禁入口丢失。
+
+实测 `stacks:['rust','node-frontend']`（multi-stack/full-governance/full-product scenario）→ 最终 Makefile 是 node-frontend 的（`# Makefile — <项目名> (Node 前端)`），rust 的 `cargo fmt/clippy/test/build` + verify-fast/verify-release cargo 门禁入口丢失。
+
+### 根因
+
+`writeTree` 写入路径是 `join(targetDir, outRelMapped)`，对所有 stack 都用根路径，无 per-stack 命名空间。这是 assemble.mjs 既有架构局限——单栈场景无问题，多栈场景（尤其 Node 拆分后多栈变常见）才暴露。
+
+### 影响边界（重要）
+
+- **lefthook 钩子层门禁不丢**：lefthook.yml 是合并的（各语言 `<!--IF:rust-->`/`<!--IF:node-->`/`<!--IF:go-->`/`<!--IF:java-->` 块按 cond 激活，不覆盖），git 钩子仍触发各语言 lint。
+- **只丢 `make` 入口**：`make lint`/`make verify-fast`/`make verify-release` 只跑最后那个 stack 的命令，其它 stack 的 make 门禁入口丢失。
+- **当前 stack 模板无实际源码**：rust/go/java 的 stack 模板只有 Makefile/pom.xml/go.mod，无 Cargo.toml/main.go/*.java（由 dev-conductor 原生脚手架生成）。所以"丢 Makefile"目前只丢目标定义，不丢已有工程。
+
+### 严重度
+
+**低**。lefthook 钩子层门禁仍在，只影响 `make` 入口体验。但违背用户"门禁管控"诉求（多栈仓应能 `make verify-fast` 跑全部门禁）。
+
+### 预防措施（规则）
+
+- 多栈 scenario 的 golden 测试应断言 Makefile 内容含**所有**激活栈的门禁命令，而非只验存在。当前 multi-stack 测试只断言 `mk.includes('# Makefile — MultiStack')`（项目名），未验 cargo/npm/go/java 命令共存——掩盖了覆盖问题。
+- writeTree 多栈同名文件覆盖是已知局限，未来若引入 per-stack 命名空间（如 `<stack>-Makefile` 或分段 Makefile），需同步改 golden 断言。
+
+### 如何避免
+
+- 设计多栈 scenario 时，检查各 stack 是否有同名胶水文件（Makefile 是最常见冲突点）。
+- 若需多栈 Makefile 共存，考虑：① Makefile 按 stack 分段（一个 Makefile 含各 stack 的 lint/test target，用条件装配合并）；② per-stack 子目录 Makefile（`make -C rust lint`）；③ writeTree 给 stack 文件加 per-stack 前缀。
+- golden 测试断言要验**内容共存**而非仅验存在。
+
+### 相关
+
+- 发现 commit：Task 9 迁移（`7d56f78`）期间 code review 独立核实。
+- 根因文件：`skills/init-code-repo/assemble.mjs:88-92`（writeTree 遍历 stacks 写根路径）。
+- 受影响 scenario：multi-stack / full-governance / full-product（含 rust+node-frontend）。Task 10 扩展四栈（rust+node-frontend+java+go）将加剧冲突——四个 stack 都有 Makefile.tmpl。
+- 待修：Task 10 或后续 spec 设计多栈 Makefile 合并方案。
