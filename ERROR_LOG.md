@@ -163,4 +163,4 @@
 - 发现 commit：Task 9 迁移（`7d56f78`）期间 code review 独立核实。
 - 根因文件：`skills/init-code-repo/assemble.mjs:88-92`（writeTree 遍历 stacks 写根路径）。
 - 受影响 scenario：multi-stack / full-governance / full-product（含 rust+node-frontend）。Task 10 扩展四栈（rust+node-frontend+java+go）将加剧冲突——四个 stack 都有 Makefile.tmpl。
-- 待修：Task 10 或后续 spec 设计多栈 Makefile 合并方案。
+- 已修复（方案 A：共享 Makefile 模板 + 条件分段）：新建 templates/shared/Makefile.tmpl，6 栈命令按 <!--IF:栈--> 分段合并；assemble.mjs 加 shared writeTree（stacks 非空时写）；从 stacks/<栈>/ 移走 Makefile。预防措施落实：multi-stack golden 加四栈命令共存断言 + Makefile 内容 snapshot。commit 095dee6。
