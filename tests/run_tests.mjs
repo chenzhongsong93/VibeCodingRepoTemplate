@@ -528,6 +528,8 @@ test('dev-conductor: SKILL.md exists and orchestrates superpowers', () => {
   assertOk(skill.includes('构建块视图'), 'reads system-architecture to split modules');
   assertOk(skill.includes('cargo new') || skill.includes('npm create'), 'native scaffolding');
   assertOk(skill.includes('不写文档/代码') || skill.includes('不自己写代码'), 'does not write code itself');
+  assertOk(skill.includes('mvn archetype:generate'), 'dev-conductor java 命令完整（非 ... 省略）');
+  assertOk(!skill.match(/mvn archetype:generate\s*\.\.\./), 'java 命令无 ... 省略');
 });
 
 test('init-code-repo SKILL.md引导 dev-conductor (not fill-design-doc/scaffold-code)', () => {

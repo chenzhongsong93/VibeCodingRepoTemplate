@@ -54,7 +54,7 @@ init-code-repo 已建仓（文档骨架带 TODO + 门禁 + 完整性门控）。
 | node | cli/server | `npm init -y` + `src/index.ts` |
 | python | app | `uv init <name>` |
 | go | any | `go mod init <module>` + `main.go` |
-| java | maven | `mvn archetype:generate ...` |
+| java | maven | `mvn archetype:generate -DgroupId={{GROUP_ID}} -DartifactId={{PROJECT_NAME}} -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false` |
 
 monorepo 在 `apps/<name>/` 或 `crates/<name>/` 下跑；single 在根。按构建块视图把产物拆到设计位置。`lefthook install` 接门禁。验证 `cargo build`/`npm install`/`go build`/`mvn compile` 可过。
 
