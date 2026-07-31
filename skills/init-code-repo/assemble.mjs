@@ -89,6 +89,10 @@ export function assemble(targetDir, config) {
   for (const stack of config.stacks || []) {
     writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet, map);
   }
+  // 多栈 Makefile 共享模板：单实例写入，避免 per-stack Makefile 同名覆盖（EL-004）
+  if ((config.stacks || []).length > 0) {
+    writeTree(join(root, 'shared'), targetDir, ctx, activeSet, map);
+  }
   writeTree(join(root, 'gates'), targetDir, ctx, activeSet, map);
   if (config.repoRole === 'central-docs') {
     writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet, map);

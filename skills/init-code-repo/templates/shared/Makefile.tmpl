@@ -1,0 +1,168 @@
+# Makefile — {{PROJECT_NAME}}
+# 门禁命令封装（多栈条件合并，对应 lefthook.yml 各语言钩子）
+
+.PHONY: lint test build run
+
+lint:
+<!--IF:rust-->
+	cargo clippy --all-targets -- -D warnings
+	cargo fmt --check
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	npm run lint
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	npm run lint
+<!--/IF:node-backend-->
+<!--IF:python-->
+	ruff check .
+	mypy .
+<!--/IF:python-->
+<!--IF:go-->
+	@command -v golangci-lint >/dev/null && golangci-lint run . \
+	  || (echo "[lint] golangci-lint 未安装，降级 gofmt+vet（非阻断）" && gofmt -l . && go vet ./...)
+<!--/IF:go-->
+<!--IF:java-->
+	mvn spotless:check checkstyle:check spotbugs:check
+<!--/IF:java-->
+
+<!--IF:rust-->
+lint-fix:
+	cargo fmt
+	cargo clippy --all-targets --fix --allow-dirty --allow-staged
+<!--/IF:rust-->
+
+test:
+<!--IF:rust-->
+	cargo test --workspace
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	npm test
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	npm test
+<!--/IF:node-backend-->
+<!--IF:python-->
+	pytest -q
+<!--/IF:python-->
+<!--IF:go-->
+	go test ./...
+<!--/IF:go-->
+<!--IF:java-->
+	mvn test
+<!--/IF:java-->
+
+build:
+<!--IF:rust-->
+	cargo build --release
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	npm run build
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	npm run build
+<!--/IF:node-backend-->
+<!--IF:python-->
+	python -m build
+<!--/IF:python-->
+<!--IF:go-->
+	go build -o bin/{{PROJECT_NAME}} .
+<!--/IF:go-->
+<!--IF:java-->
+	mvn package
+<!--/IF:java-->
+
+run:
+<!--IF:rust-->
+	cargo run
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	npm run dev
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	npx tsx src/index.ts
+<!--/IF:node-backend-->
+<!--IF:python-->
+	python -m {{PROJECT_NAME}}
+<!--/IF:python-->
+<!--IF:go-->
+	go run .
+<!--/IF:go-->
+<!--IF:java-->
+	mvn exec:java
+<!--/IF:java-->
+<!--IF:agent-policy-->
+.PHONY: policy-check verify-fast verify-ci verify-release
+policy-check:
+	@node scripts/check-agent-policy.mjs .
+
+verify-fast: policy-check
+	@git diff HEAD --check
+<!--IF:rust-->
+	@cargo fmt --check
+	@cargo clippy -D warnings
+	@cargo test --lib
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	@npm run verify:fast
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	@npm run verify:fast
+<!--/IF:node-backend-->
+<!--IF:python-->
+	@ruff check .
+	@mypy .
+	@pytest -q
+<!--/IF:python-->
+<!--IF:go-->
+	@command -v golangci-lint >/dev/null && golangci-lint run . \
+	  || (gofmt -l . && go vet ./...)
+	@go test ./...
+<!--/IF:go-->
+<!--IF:java-->
+	@mvn spotless:check checkstyle:check spotbugs:check
+	@mvn test
+<!--/IF:java-->
+
+verify-ci: verify-fast
+<!--IF:rust-->
+	@cargo test
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	@npm run verify:ci
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	@npm run verify:ci
+<!--/IF:node-backend-->
+<!--IF:python-->
+	@pytest -q
+<!--/IF:python-->
+<!--IF:go-->
+	@go test ./...
+<!--/IF:go-->
+<!--IF:java-->
+	@mvn test
+<!--/IF:java-->
+
+verify-release:
+	@if [ "$$ALLOW_REAL_E2E" != "1" ]; then echo "需 ALLOW_REAL_E2E=1"; exit 2; fi
+	@$(MAKE) verify-ci
+<!--IF:rust-->
+	@cargo build --release
+<!--/IF:rust-->
+<!--IF:node-frontend-->
+	@npm run build
+<!--/IF:node-frontend-->
+<!--IF:node-backend-->
+	@npm run build
+<!--/IF:node-backend-->
+<!--IF:python-->
+	@python -m build
+<!--/IF:python-->
+<!--IF:go-->
+	@go build -o bin/{{PROJECT_NAME}} .
+<!--/IF:go-->
+<!--IF:java-->
+	@mvn package
+<!--/IF:java-->
+<!--/IF:agent-policy-->

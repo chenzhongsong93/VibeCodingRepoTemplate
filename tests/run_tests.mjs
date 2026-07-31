@@ -259,7 +259,21 @@ test('multi-stack: glue files + pre-receive present', () => {
   assertOk(tree.includes('docs/ledger/version-log.md'), 'version-log.md present (full-ledger)');
   // substituted content
   const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  // 四栈 Makefile 命令共存（EL-004 核心验证）
   assertOk(mk.includes('# Makefile — MultiStack'), 'Makefile has project name');
+  assertOk(mk.includes('cargo clippy'), 'rust lint present');
+  assertOk(mk.includes('cargo test --workspace'), 'rust test present');
+  assertOk(mk.includes('cargo build --release'), 'rust build present');
+  assertOk(mk.includes('npm run lint'), 'node-frontend lint present');
+  assertOk(mk.includes('npm run dev'), 'node-frontend run present');
+  assertOk(mk.includes('mvn spotless:check'), 'java lint present');
+  assertOk(mk.includes('mvn test'), 'java test present');
+  assertOk(mk.includes('mvn package'), 'java build present');
+  assertOk(mk.includes('go test ./...'), 'go test present');
+  assertOk(mk.includes('go build -o bin/MultiStack .'), 'go build present (PROJECT_NAME substituted)');
+  assertOk(mk.includes('golangci-lint'), 'go golangci-lint fallback present');
+  assertOk(!mk.includes('verify-fast:'), 'no verify-fast without agent-policy');
+  assertOk(!mk.includes('policy-check:'), 'no policy-check without agent-policy');
   assertClean(mk, 'multi-stack Makefile');
   const pj = readFileSync(`${tmp}/package.json`, 'utf8');
   assertOk(pj.includes('"name": "MultiStack"'), 'package.json has project name');
@@ -995,4 +1009,26 @@ test('go: go.mod present + Makefile golangci-lint fallback + build target fixed'
   assertOk(mk.includes('go build -o bin/GoApp .'), 'build target fixed (single . not ./...)');
   assertOk(!mk.includes('go build -o bin/GoApp ./...'), 'no broken ./... with -o');
   assertClean(mk, 'go Makefile');
+});
+
+test('multi-stack: Makefile content snapshot', () => {
+  const tmp = '/tmp/init-code-repo-test-multi-stack-snap';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, JSON.parse(readFileSync('tests/scenarios/multi-stack/config.json','utf8')));
+  const actual = readFileSync(`${tmp}/Makefile`, 'utf8');
+  const expected = readFileSync('tests/golden/multi-stack/Makefile', 'utf8');
+  assert.equal(actual, expected, 'multi-stack Makefile snapshot mismatch');
+});
+
+test('single-stack rust: Makefile contains only rust block', () => {
+  const tmp = '/tmp/init-code-repo-test-mk-single-rust';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['rust'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('cargo clippy'), 'rust present');
+  assertOk(!mk.includes('npm run'), 'no node block');
+  assertOk(!mk.includes('mvn '), 'no java block');
+  assertOk(!mk.includes('go test ./...'), 'no go block');
+  assertOk(!mk.includes('pytest'), 'no python block');
+  assertClean(mk, 'single rust Makefile');
 });

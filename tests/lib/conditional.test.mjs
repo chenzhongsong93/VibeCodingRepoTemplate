@@ -36,3 +36,13 @@ test('handles nested IF blocks (outer active, inner mixed)', () => {
   // outer inactive → whole block stripped, no inner leak
   assert.equal(stripConditionals(tpl, []), '');
 });
+
+test('parallel IF blocks at same level (Makefile multi-stack pattern)', () => {
+  const tpl = 'lint:\n<!--IF:rust-->\n\tcargo clippy\n<!--/IF:rust--><!--IF:go-->\n\tgo vet\n<!--/IF:go-->\n';
+  assert.equal(
+    stripConditionals(tpl, ['rust','go']),
+    'lint:\n\tcargo clippy\n\tgo vet\n'
+  );
+  assert.equal(stripConditionals(tpl, ['rust']), 'lint:\n\tcargo clippy\n');
+  assert.equal(stripConditionals(tpl, []), 'lint:\n');
+});

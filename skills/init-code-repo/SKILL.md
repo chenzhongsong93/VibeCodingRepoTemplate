@@ -153,7 +153,8 @@ zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径
 ### 5. 写入路径
 
 - `templates/core/**` → 目标仓根（保留相对路径）。
-- `templates/stacks/<栈>/**` → 目标仓根（每个选中栈）。
+- `templates/stacks/<栈>/**` → 目标仓根（每个选中栈；仅 per-stack 胶水文件如 pom.xml/go.mod/package.json/tsconfig.json，不含 Makefile）。
+- `templates/shared/**` → 目标仓根（仅当 stacks 非空时写入；含跨栈共享 Makefile，按激活栈条件分段合并，避免多栈同名覆盖 EL-004）。
 - `templates/gates/**` → 目标仓根（按 require 标记条件包含）。
 - `templates/runtime-adapters/<runtime>/**` → 目标仓根（每个选中 runtime）。
 - `.tmpl` 后缀去掉。

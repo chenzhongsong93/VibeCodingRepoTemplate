@@ -17,9 +17,13 @@
   "docs/rules/dev-workflow-rules.md",
   "docs/rules/doc-ssot-rules.md",
   "docs/superpowers/specs/.gitkeep",
+  "go.mod",
   "lefthook.yml",
   "package.json",
+  "pom.xml",
   "pre-receive-remote/pre-receive",
   "scripts/check-completeness.mjs",
+  "src/main/java/.gitkeep",
+  "src/test/java/.gitkeep",
   "tsconfig.json"
 ]
