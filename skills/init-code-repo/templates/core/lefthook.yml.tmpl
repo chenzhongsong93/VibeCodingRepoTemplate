@@ -27,6 +27,33 @@ pre-commit:
       glob: "*.{ts,tsx,js,jsx,json,css,md}"
       run: npx prettier --check {staged_files}
 <!--/IF:node-->
+<!--IF:python-->
+    python-ruff:
+      glob: "*.py"
+      run: ruff check {staged_files}
+    python-mypy:
+      glob: "*.py"
+      run: mypy {staged_files}
+<!--/IF:python-->
+<!--IF:go-->
+    go-fmt:
+      glob: "*.go"
+      run: gofmt -l {staged_files}
+    go-vet:
+      glob: "*.go"
+      run: go vet {staged_files}
+    golangci-lint:
+      glob: "*.go"
+      run: command -v golangci-lint >/dev/null && golangci-lint run {staged_files} || (echo "[golangci-lint] 未安装，降级 gofmt+vet（非阻断）" && gofmt -l {staged_files} && go vet {staged_files})
+<!--/IF:go-->
+<!--IF:java-->
+    java-fmt:
+      glob: "*.java"
+      run: mvn spotless:check
+    java-checkstyle:
+      glob: "*.java"
+      run: mvn checkstyle:check
+<!--/IF:java-->
 
 commit-msg:
   commands:
@@ -57,7 +84,7 @@ pre-push:
 <!--IF:doc-sync-->
     doc-sync-check:
       run: |
-        if git diff --name-only HEAD@{1} HEAD | grep -qE '\.(rs|ts|tsx|js|jsx|py|go)$'; then
+        if git diff --name-only HEAD@{1} HEAD | grep -qE '\.(rs|ts|tsx|js|jsx|py|go|java)$'; then
           echo "⚠️ 代码变更：确认是否需同步设计文档。见 AGENTS.md。"
         fi
         exit 0

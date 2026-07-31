@@ -878,3 +878,16 @@ test('node-backend stack derives node cond (lefthook web-lint present)', () => {
   assertOk(lh.includes('eslint'), 'node-backend derives node cond → web-lint present');
   assertClean(lh, 'node-backend lefthook');
 });
+
+test('lefthook: python/go/java blocks present when stack active', () => {
+  for (const stack of ['python', 'go', 'java']) {
+    const tmp = `/tmp/init-code-repo-test-lh-${stack}`;
+    rmSync(tmp, { recursive: true, force: true });
+    assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:[stack], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+    const lh = readFileSync(`${tmp}/lefthook.yml`, 'utf8');
+    if (stack === 'python') { assertOk(lh.includes('ruff check'), `${stack} ruff`); assertOk(lh.includes('mypy'), `${stack} mypy`); }
+    if (stack === 'go') { assertOk(lh.includes('gofmt'), `${stack} gofmt`); assertOk(lh.includes('go vet'), `${stack} vet`); assertOk(lh.includes('golangci-lint'), `${stack} golangci-lint`); }
+    if (stack === 'java') { assertOk(lh.includes('spotless:check'), `${stack} spotless`); assertOk(lh.includes('checkstyle:check'), `${stack} checkstyle`); }
+    assertClean(lh, `${stack} lefthook`);
+  }
+});
