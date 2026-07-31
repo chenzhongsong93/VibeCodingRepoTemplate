@@ -932,3 +932,19 @@ test('java-stack: no dead links + clean', () => {
   assert.equal(deadLinks(tmp).length, 0, 'java-stack dead links');
   for (const f of fileTree(tmp)) if (!f.endsWith('.gitkeep')) assertClean(readFileSync(`${tmp}/${f}`,'utf8'), `java-stack:${f}`);
 });
+
+test('node-frontend: package.json + Makefile + tsconfig present', () => {
+  const tmp = '/tmp/init-code-repo-test-node-fe';
+  rmSync(tmp, { recursive: true, force: true });
+  assemble(tmp, { projectName:'P', oneLine:'L', year:'2026', stacks:['node-frontend'], repoShape:'single', runtimes:[], remote:'none', commitGate:{mode:'default'}, components:[] });
+  const tree = fileTree(tmp);
+  assertOk(tree.includes('package.json'), 'package.json');
+  assertOk(tree.includes('Makefile'), 'Makefile present (node-frontend aligns)');
+  assertOk(tree.includes('tsconfig.json'), 'tsconfig.json');
+  const mk = readFileSync(`${tmp}/Makefile`, 'utf8');
+  assertOk(mk.includes('npm run'), 'Makefile wraps npm scripts');
+  assertClean(mk, 'node-frontend Makefile');
+  const ts = readFileSync(`${tmp}/tsconfig.json`, 'utf8');
+  assertOk(ts.includes('jsx'), 'tsconfig frontend jsx');
+  assertClean(ts, 'node-frontend tsconfig');
+});
