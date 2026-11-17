@@ -3,7 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/run_tests.mjs",
-    "check:completeness": "node scripts/check-completeness.mjs"
+    "test": "node --test tests/run_tests.mjs tests/v2/*.test.mjs",
+    "test:v1": "node --test tests/run_tests.mjs",
+    "test:v2": "node --test tests/v2/*.test.mjs",
+    "check": "node scripts/check-templates.mjs",
+    "check:completeness": "node scripts/check-templates.mjs"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

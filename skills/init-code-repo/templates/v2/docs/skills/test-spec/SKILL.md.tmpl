@@ -1,0 +1,11 @@
+<!--require:dev-flow-skills-->
+---
+name: test-spec
+description: Use when designing new tests or adding missing boundary and error coverage.
+---
+
+# test-spec
+
+依次写因子、场景矩阵、边界、异常、分支覆盖、用例清单。ID用L1/L2/L3-域-序号；测试代码以“覆盖:”标签对应唯一ID。将id/file/selector填入.harness/test-map.json；检查器对支持的声明语法校验，不支持语法须补适配或明确阻断。不要把空集合、Set去重或替身测试冒充完整集成验收。
+
+共同规则：[生命周期](../../rules/{{FNAME:docs/rules/dev-workflow-rules.md}})。平台入口不复制正文。

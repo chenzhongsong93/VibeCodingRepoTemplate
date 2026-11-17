@@ -1,0 +1,19 @@
+# 显式安装后才生效；公共检查不依赖hook安装。
+pre-commit:
+  commands:
+    verify-fast:
+      run: node scripts/harness/check.mjs --profile fast
+    optional-local-secret-check:
+      run: node scripts/harness/hook.mjs secret-check
+commit-msg:
+  commands:
+    commit-policy:
+      run: node scripts/harness/hook.mjs commit-msg "{1}"
+pre-push:
+  commands:
+    verify-fast:
+      run: node scripts/harness/check.mjs --profile fast
+<!--IF:doc-sync-->
+    doc-sync-reminder:
+      run: node scripts/harness/hook.mjs doc-sync
+<!--/IF:doc-sync-->

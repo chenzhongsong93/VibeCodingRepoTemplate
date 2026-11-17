@@ -1,0 +1,5 @@
+<!--require:remote-hook-->
+#!/bin/sh
+# 服务端须自行安装Node与本项目harness文件；模板不代表远端支持或已安装。
+# HARNESS_HOOK_ROOT指向含.harness/project.json和scripts/harness的只读配置目录。
+exec node "${HARNESS_HOOK_ROOT:?需服务端配置目录}/scripts/harness/hook.mjs" pre-receive

@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+import { runChecks } from './harness/runner.mjs';
+const args=process.argv.slice(2);
+const i=args.indexOf('--root');
+const root=i>=0?args[i+1]:(args[0]&&!args[0].startsWith('--')?args[0]:'.');
+const s=args.indexOf('--stage');
+const result=runChecks(root,{only:'core.completeness',...(s>=0?{stage:args[s+1]}:{})});
+console.log(JSON.stringify(result,null,2));process.exitCode=result.exitCode;

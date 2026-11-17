@@ -1,0 +1,11 @@
+# 当前变化与本地过程材料指南
+
+本目录只保留指南/模板，不为每次变更永久创建task设计档。正式目标从[域索引]({{FILE:specs/README.md}})与[系统设计]({{FILE:docs/00-system/system-design.md}})定位；当前态与全部未闭环见[HANDOVER]({{FILE:docs/HANDOVER.md}})。
+
+默认e2e支持直接按所属域的本地plan/tasks/implement执行；使用Spec Kit和superpowers时共享同一文件，不各开一套长期文档。获批需求/设计与长期决策写回原活spec，事实/测试回到对应owner。
+
+可选task助手的执行状态在.harness/local/tasks（忽略），不是设计权威或强制平台。`node scripts/harness/task-cli.mjs create --title <主题> --domain specs/NNN-domain/spec.md`只辅助当前变化；未定位实际域不能完整结束。局部review记录是审查来源，不是防篡改授权凭证。
+
+换机/新检出可能没有本地细稿。共享的正式设计和短交接必须足以解释目标、已接受决策、未完成条件和下一步；明确重建计划，不能假装本机UUID状态已同步。必要活跃协作材料有明确用途/结束处理，不能成为第二套永久设计。
+
+摘要使用[变化模板]({{FILE:docs/tasks/task-template.md}})；本指南由documents.taskGuide定位，助手使用documents.taskTemplate。

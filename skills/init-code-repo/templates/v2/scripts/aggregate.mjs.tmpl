@@ -1,0 +1,18 @@
+<!--require:central-docs-->
+// 只消费已显式准备的本地组件快照，不自动clone/fetch或联系服务。
+import {readFileSync,existsSync,writeFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {inside} from './harness/model.mjs';
+try{
+ const registry=readFileSync(inside(process.cwd(),'docs/components/registry.yaml'),'utf8');const components=[];let cur;
+ for(const line of registry.split('\n')){
+  const n=line.match(/^\s*-\s+name:\s*(.+)$/);if(n){cur={name:n[1].trim()};components.push(cur);continue;}
+  const local=line.match(/^\s*local:\s*(.+)$/);if(local&&cur)cur.local=local[1].trim();
+ }
+ if(!components.length)throw new Error('组件注册表为空，不能声明聚合完成');
+ const missing=components.filter(c=>!c.local||!existsSync(inside(process.cwd(),`${c.local}/doc/component.yaml`)));
+ if(missing.length)throw new Error(`缺失本地组件快照: ${missing.map(c=>c.name).join(', ')}`);
+ const rows=components.map(c=>({name:c.name,source:`${c.local}/doc/component.yaml`,content:readFileSync(inside(process.cwd(),`${c.local}/doc/component.yaml`),'utf8')}));
+ const output='# 架构总览（本地组件快照聚合）\n\n视图不是契约权威；不声称完整契约矩阵。\n\n'+rows.map(c=>`## ${c.name}\n\n来源: ${c.source}\n\n\`\`\`yaml\n${c.content}\n\`\`\`\n`).join('\n');
+ writeFileSync(inside(process.cwd(),'{{FPATH:docs/architecture-overview.md}}'),output);console.log(JSON.stringify({status:'pass',components:rows.map(c=>c.name)}));
+}catch(e){console.log(JSON.stringify({status:'blocked',message:e.message}));process.exitCode=2;}

@@ -1,0 +1,77 @@
+# 工程资产的持续维护
+
+系统和域设计保持唯一当前正文，重要结论修改原章节。临时脚本、截图、分析和日志按工作归属维护；正式源码、基准、未认领历史不进入临时GC。
+
+## 工作与资产
+
+创建一个工作材料束，工具返回`id`和受管`path`，把本次脚本、截图、报告输出到该目录。无需给每个文件再建登记表，也无需taskCLI：
+
+```bash
+node scripts/harness/assets-cli.mjs workspace --work order-cancel --kind work --producer agent
+node scripts/harness/assets-cli.mjs inventory
+```
+
+类别为work、run、cache、evidence；cache须给`--rebuild`说明，evidence默认有保留锁。外部工具不能指定输出目录时，将确切产物复制到返回path，原路径不自动清理。未知文件即使被Git忽略也不自动认领。
+
+并行生产者写入前用`lease --id <id> --reason <用途>`取得token，结束后`release --id <id> --token <token>`。暂停或失败用`block --id <id> --reason <原因>`保护，处理后用`resume --id <id>`继续；失联不会自动解除租约。`reference --from <消费资产id> --to <输入资产id>`建立消费关系，删除关系用unreference。活跃消费关系传递保护输入。
+
+关闭前把需求、设计、长期工具、故障回归归入原owner；对剩余材料明确处置：
+
+```bash
+node scripts/harness/assets-cli.mjs close --id <id> --disposition discarded --reason "试验结束，结论已回原设计，无剩余证据义务"
+node scripts/harness/assets-cli.mjs close --id <id> --disposition retained --reason "仍需用于验收"
+```
+
+有必要保留的截图/脚本不要用discarded关闭。可用`pin/unpin --id <id> --name <保留理由>`控制明确保留；失败原因尚未处理不能移除保护。人工标记与工具检查不能替代内容判断。
+
+## 验证证据与交付
+
+统一check入口会把实际报告登记为run资产，返回`assetId`、`evidencePath`。任务未完成时保护相关run；完成时保护最新完成凭据、释放旧run的任务保护。无任务助手的失败run以`failure-needs-triage`保护，处理根因并承接必要证据后显式unpin；普通成功run按策略保留。
+
+必要证据可导出到受管GC区之外的离线包：
+
+```bash
+node scripts/harness/assets-cli.mjs export --id <id> --to .artifacts/evidence/order-cancel
+node scripts/harness/assets-cli.mjs verify-export --path .artifacts/evidence/order-cancel
+node scripts/harness/assets-cli.mjs close --id <id> --disposition transferred --target .artifacts/evidence/order-cancel --reason "原始内容与承接包已核对"
+```
+
+包包含files和manifest；导出、关闭和每次回收都会核对必要内容。导出不自动解除已有pin。本地包仍是local-copy，必须实际传递或发布到项目约定位置后才称共享；`.artifacts/`默认忽略，不自动把大型证据加入Git。必要版本证据保留按项目支持期决定，不能仅依赖会过期的CI artifact URL。
+
+## 自动维护与恢复
+
+`.harness/assets.json`默认`enabled:false`。先检查盘点与计划，在项目确定保留策略后设置enabled为true；这项策略内的授权持续有效，无需每轮确认。默认工作材料7天、run30天、cache14天或1GiB容量、隔离7天；时长从已关闭状态判断，活跃/失败/租约/pin/保护引用优先。已有未知历史不因启用策略立刻被清理。
+
+```bash
+node scripts/harness/assets-cli.mjs plan > .harness/local/gc-plan.json
+node scripts/harness/assets-cli.mjs apply --plan .harness/local/gc-plan.json
+node scripts/harness/assets-cli.mjs restore --id <id>
+node scripts/harness/assets-cli.mjs run-due
+node scripts/harness/assets-cli.mjs status
+```
+
+apply是明确执行计划，不要求自动模式开启；run-due只在enabled策略内工作。计划24小时后或内容/策略/引用变化时失效。先隔离，后续调用满足隔离保留期才最终删除；restore保持原字节，增加restored保留锁，目标冲突不覆盖。操作中断先用recover；失联锁可用recover-lock核对本机进程，未知锁保留现场。损坏记录、路径逃逸、symlink、Git跟踪和不明写入者都会阻止回收；不使用全仓git clean或全局容器清理。
+
+真正的周期调用可以运行前台维护进程，或生成OS配置：
+
+```bash
+node scripts/harness/maintenance.mjs run --iterations 0 --interval-seconds 86400
+node scripts/harness/maintenance.mjs render --platform systemd
+node scripts/harness/maintenance.mjs render --platform launchd
+node scripts/harness/maintenance.mjs render --platform windows
+node scripts/harness/maintenance.mjs status
+```
+
+只在目标OS生成其调度文件，文件包含实际Node/仓根路径及资产仓身份。render不安装调度器；项目显式加载生成的systemd user service/timer、launchd plist或Task Scheduler XML后，核对实际运行记录。不同仓的任务名称带独立身份，仓移动或替换导致身份不符时拒绝执行。Linux前台周期行为经本地测试；其他OS文件生成不代表平台加载实测。CI清理不能清理开发者本机工作区。
+
+## CI与存量仓
+
+`node scripts/harness/ci.mjs render --provider github`或`--provider gitlab`生成实际workflow，已有不同配置不覆盖，改在原pipeline接入同一入口。`.harness/project.json`的`ci.bootstrap`是`{argv,cwd,timeoutSeconds}`数组，用实际项目依赖/工具准备命令；`ci.mjs prepare`按真实cwd执行并传播失败。workflow随后运行`check.mjs --profile ci`，默认证据保留30天；配置生成不代表远端执行。
+
+check的`inputs`可声明cwd相对的间接配置/数据依赖；直接本地argv输入同样进入完整验证闭包。源码目录输入要具体，不能递归包含harness产物根而产生自引用凭据。CLI检查、实际业务覆盖、语义审阅和发布授权分别给结论。
+
+Python默认lint/typecheck使用公开`inputSelection:{kind:"python-files",excludeDirectoryNames:[...],excludePaths:[...]}`，在cwd下枚举`.py`/`.pyi`，按配置排除目录名及cwd相对路径，再以`--`加实际文件名调用ruff/mypy。空选择阻断；运行报告的argv、`fingerprintScope.commandSelections`列出实际范围，`consumedInputs`同时绑定文件内容和选择集合，新增文件也会使旧凭据失效。这不是对显式目录输入的隐式过滤；项目自定义广目录命令仍需缩小输入。默认选择器不代替工具配置/插件/间接依赖声明，仓库指纹外的配置须补入`inputs`。升级把argv/cwd/选择器作为同一执行契约，保留项目自定义命令，不向其静默嫁接新选择器。
+
+runner在GC同一协作锁下冻结实际输入并为已登记资产获取消费者租约，覆盖命令执行和报告保存期间；未知输入只绑定指纹，不自动认领。报告登记时原子建立run→输入引用并释放租约，任务活跃/完成/失败保护及尚在保留期的运行记录会传递保护输入。`noRecord`在命令确实返回后释放租约，不保留运行凭据；报告写入失败或进程中断则保留租约。用inventory核对租约的reason/pid/host及真实运行状态，再显式`release --id <输入id> --token <token>`；recover不因超时或失联自动释放。旧运行按任务完成流程退休、且没有其他保留义务后，其输入才重新按原处置和TTL取得GC资格。
+
+存量仓先使用模板技能的adopt inspect/plan/check/apply认领，不用新仓装配覆盖已有README、AGENTS、包配置、CI和域设计。整改计划明确保留、补齐、冲突及待填内容；资产引擎从新登记的材料开始管理，既有历史另行认领。本项目既定设计与遗留承接始终是下一轮维护的入口。

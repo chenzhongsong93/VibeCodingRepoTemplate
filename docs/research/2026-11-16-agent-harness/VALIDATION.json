@@ -1,0 +1,14 @@
+{
+  "documentationFiles": 8,
+  "localLinksChecked": 101,
+  "lineReferencesChecked": 73,
+  "codeFenceMarkers": 8,
+  "acceptanceCriteria": 15,
+  "intakeCandidates": 13,
+  "trackedDiffs": "none in both repositories",
+  "sourceHead": "597080942e0ce677ccf3fc2c6ff8b35522adb523",
+  "targetHead": "e96e0c8bb7b30e15b79455cff81bc949367fcf73",
+  "issues": [],
+  "finalWorkspace": "10 untracked research deliverable files only; source clean",
+  "verificationScope": "documentation links/line bounds/fences, coverage IDs, Git baseline and change scope; no full application tests"
+}

@@ -1,0 +1,4 @@
+<!--require:worktree-tooling-->
+#!/bin/sh
+# 仅预览；不强制清理、不删除分支、不操作远端。
+exec node scripts/harness/worktree.mjs preview-cleanup --branch "$1"

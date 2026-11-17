@@ -1,88 +1,43 @@
 ---
 name: dev-conductor
-description: Orchestrate superpowers to drive a project from skeleton to working code, per the template's骨架+规范. Reads the completeness gate to find unfilled design docs, drives superpowers:brainstorming to fill each section; once design is filled, gives code skeleton+gates via native scaffolding (cargo new/npm create/mvn/uv/go mod) and drives superpowers:writing-plans+executing-plans+TDD to implement each module per the system-architecture构建块视图. Use AFTER init-code-repo. The template defines skeleton+norms; this skill conducts superpowers to execute — does not write docs/code itself.
+description: Use when continuing a project after initialization, resuming interrupted work, or implementing an approved feature, fix or architecture change.
 ---
 
-# dev-conductor — 开发指挥
+# 按设计持续演进的开发入口
 
-按 init-code-repo 的骨架+规范，**驱动 superpowers** 走完"设计→落地"。本 skill 是指挥，不是乐手——不写文档/代码，只编排 superpowers 执行。
+本技能连接项目默认e2e，不创建另一套生命周期。读取AGENTS→宪法→短HANDOVER→系统设计/域索引→所属域与事实资产；路径可从project.documents定位，但配置/任务状态不是设计权威。
 
-## 定位
+普通存量仓没有.harness/assembly.json时，先用init-code-repo的adopt inspect/plan/check/apply认领已有设计与实际模块；不能直接套新仓装配或虚构旧模板基线。已有设计路径通过documents/domains映射复用，整改缺口在原owner补全，不按任务新建平行规格。
 
-- init-code-repo：骨架（结构）+ 规范（规则/门禁）。宪法+地图。
-- **dev-conductor：指挥。** 读地图调度，按完整性门控逐项驱动 superpowers。
-- superpowers / openspec：乐手。brainstorming/writing-plans/executing-plans/TDD 实际执行。
+## 定位与变化
 
-## 前置
+先读现有域/实现/调用方/环境，明确来源、目标/非目标、风险、受影响域和公共不变量。已有域修订同一spec；只有独立职责才新增域。新仓先建立实际系统与功能域设计，不默认给所有项目建治理域。T0只读直接报告。
 
-init-code-repo 已建仓（文档骨架带 TODO + 门禁 + 完整性门控）。
+读取project.documents.e2e指向的实际正文执行（新仓默认docs/skills/e2e-dev-flow/SKILL.md，存量以实际映射为准）：Spec Kit组织规格/计划/任务/分析/实施及实现缺口评估，superpowers承担探索/TDD/debug/review/verification；本仓继续承担裁决和长期owner回刷。原生converge不会改写spec/plan，两者共用工件须核对真实版本和路径。没有外部方法时按正文同等步骤执行并如实报告，不伪造调用。
 
-## 流程
+## 正式设计与过程
 
-### 1. 读进度：完整性门控
+提议批准前本地；获批目标进入原活spec并标待实现/待验证。过程plan/tasks/implement默认所属域忽略区，长期结构/决策/验收分别回原owner，不永久保存每轮任务设计档。发现实现违背设计，明确裁决修实现或改目标，不刷golden造绿。
 
-跑 `node scripts/check-completeness.mjs --stage <当前阶段门>`（阶段门从 `docs/HANDOVER.md` 顶部读）。结果给出当前阶段门未填的必填文档清单（含 `（TODO: ...）` 残留）。
+首次建仓引导填实系统和至少实际相关域；后续变化只改有影响的内容，不无条件重建脚手架或扩架构。测试设计先于行为实现，需求与测试双重对照，一致性分析后TDD；代码/设计/图/契约/环境证据分别验收。
 
-- 有未填文档 → 进入步骤 2（驱动设计填充）。
-- 设计文档全填（门控过）→ 进入步骤 3（驱动代码落地）。
+## 续接与完成
 
-### 2. 驱动设计填充（superpowers:brainstorming）
+HANDOVER保存当前目标/已接受决定/全部未闭环/证据和下一步；新会话依靠正式设计，不遍历旧任务库。换机缺本地细稿要明确重建，不假设未共享内容已在Git。相同授权持续有效，无需逐阶段重复确认。
 
-对每个未填文档章节：
+可选task助手使用.harness/local/tasks，只辅助本次执行；不用UUID协议仍执行同样的e2e义务。若采用助手：
 
-1. 定位 TODO 章节，读上下文（AGENTS.md 项目一句话+栈、north-star 若存在、相关已有文档）。
-2. **驱动 `superpowers:brainstorming`** 对该章节做需求探索+设计——把 TODO 章节作为 brainstorming 的主题，逐节追问用户，产出该章节内容。
-3. brainstorming 产出 → 写回文档对应章节。
-4. 该文档所有章节填完 → 重跑完整性门控，确认该文档无 TODO 残留。
-5. 进入下一未填文档，直到当前阶段门所有必填文档过门控。
+```bash
+node scripts/harness/task-cli.mjs create --title <变化> --domain <域索引中的实际设计路径>
+node scripts/harness/task-cli.mjs show --task <ID>
+node scripts/harness/task-cli.mjs advance --task <ID> --stage <下一阶段> --expected <digest> --note <实际阶段依据>
+node scripts/harness/check.mjs --profile ci --task <ID> --intent complete
+```
 
-> dev-conductor 不自己追问/起草——调 superpowers:brainstorming 做。它只负责"按门控找未填项 → 调 brainstorming 填 → 收口"。
+直接按e2e执行可用`node scripts/harness/check.mjs --profile ci`获得仓库覆盖结论，再结合真实SC/系统不变量/语义审查结案；exit0不是自动完成授权。助手也必须有真实域来源和convergence审查/owner去向，不能凭note、hash或政策检查结束。stdout JSON的evidencePath定位本机记录，taskReady只表示其覆盖的完整验证条件，不能证明语义。
 
-### 3. 驱动代码落地（superpowers:writing-plans + executing-plans + TDD）
+converge对照内容/行为，更新原系统/域、共享契约、测试/沿革和台账，阻断偏差解决后才交接/结束。变更内容使旧验证失效；缺工具/必要L2/L3/安全复审如实阻断，不能以子集绿放行。
 
-设计文档过门控后，按 `docs/02-design/system-architecture.md` 的"构建块视图"落地代码：
+临时脚本/截图/报告先用assets-cli.mjs workspace取得工作目录；不使用taskCLI也可按工作标识维护。活跃/失败/租约/引用保持保护，工作关闭前转正长期资产并导出核验必要证据。统一check报告自动登记为run资产；完成凭据受保护，local-only不能称为共享。资产CLI plan/apply/restore/run-due、调度和CI用法见实际生成的asset-lifecycle指南；既有策略范围内自动维护不反复请批，未知历史不擅自删除。
 
-#### 3a. 给代码骨架+门禁（原生脚手架）
-
-按构建块视图的模块清单 + 栈 + 项目类型，跑原生脚手架：
-
-| 栈 | 类型 | 命令 |
-|---|---|---|
-| rust | binary/library | `cargo new [--lib/--bin] <name>` |
-| rust | workspace | 各 `cargo new --bin/--lib <name>` + 根 `Cargo.toml [workspace]` |
-| node | web-app | `npm create vite@latest <name> -- --template react-ts` |
-| node | cli/server | `npm init -y` + `src/index.ts` |
-| python | app | `uv init <name>` |
-| go | any | `go mod init <module>` + `main.go` |
-| java | maven | `mvn archetype:generate -DgroupId={{GROUP_ID}} -DartifactId={{PROJECT_NAME}} -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false` |
-
-monorepo 在 `apps/<name>/` 或 `crates/<name>/` 下跑；single 在根。按构建块视图把产物拆到设计位置。`lefthook install` 接门禁。验证 `cargo build`/`npm install`/`go build`/`mvn compile` 可过。
-
-#### 3b. 驱动 superpowers 实现每个模块
-
-对构建块视图的每个模块：
-
-1. **驱动 `superpowers:writing-plans`**——以该模块的设计（构建块视图 + entity-model + api-reference）为输入，产出实现计划。
-2. **驱动 `superpowers:executing-plans` + `superpowers:test-driven-development`**——按计划 TDD 实现。
-3. 模块实现完 → 跑该栈门禁（lint/test）→ 过则下一模块。
-
-> dev-conductor 不自己写代码——调 superpowers:writing-plans/executing-plans/TDD 做。它只负责"按构建块视图逐模块 → 调 superpowers 实现 → 门禁收口"。
-
-#### 3c. 回刷 AGENTS 仓库布局段
-
-代码落地后，用实际产物回刷 `AGENTS.md` 的"代码仓结构"段（军规 J：变更即审视回刷）。
-
-### 4. 收口
-
-每轮（填完一文档 / 实现一模块）：
-- 刷新 `docs/HANDOVER.md`（记录本轮完成项 + 下轮首做 + 当前阶段门）。
-- 重跑完整性门控，确认进度。
-- 全部过 → 当前阶段门达标，可发布。
-
-## 与 init-code-repo 的关系
-
-init-code-repo 阶段 5 末尾引导调用 dev-conductor：骨架+规范就位后，dev-conductor 接管，驱动 superpowers 把骨架填实、把代码落地。
-
-## 回应语言
-
-所有回应一律使用中文。
+提交、推送、tag、发布、部署和安装工具/hook仍按实际授权；资产GC仅在已启用的受管策略范围执行。报告实际通过/未运行/阻断、语义结论、遗留、资产证据与工作区；所有回应中文。

@@ -1,0 +1,59 @@
+# AGENTS.md — {{PROJECT_NAME}}
+
+{{ONE_LINE}}
+
+政策标记：{{POLICY_ID}}
+
+## 授权边界
+
+工具可调用不代表用户已授权。修改前检查Git状态；只改授权范围并保护用户改动。实现授权不包含提交、推送、merge、tag、发布、部署、外部消息或破坏性操作；这些动作分别需要明确授权。既有授权持续有效，不重复请批。安全改动须人工复审。
+
+## 事实与目标
+
+accepted正式设计定义目标；代码/测试/本轮运行定义事实；proposed方案不覆盖目标。冲突先记录并按批准意图修实现或改目标，不静默选一方。
+
+## 风险
+
+T0只读/微小文档；T1局部可逆实现；T2契约/架构/安全/跨系统；T3生产/不可逆。T与L1/L2/L3测试层不同。按影响运行相称验证；缺工具、失败、超时、未运行必须如实报告，不能减范围造绿。
+
+## 设计权威与新会话续接
+
+1. 本文件是政策摘要/地图，不是设计正文。
+2. [项目宪法](.specify/memory/constitution.md)规定项目不变量；用户/宿主指令优先。
+3. [HANDOVER]({{FILE:docs/HANDOVER.md}})恢复当前变化和全部未闭环。
+4. [系统总体设计]({{FILE:docs/00-system/system-design.md}})与[域索引](specs/README.md)定位长期特性设计；同域就地更新，不以任务/版本制造新权威。
+5. 读所属域、[共享模型]({{FILE:docs/00-system/domain-model.md}})及[默认e2e](docs/skills/e2e-dev-flow/SKILL.md)执行本次有边界变化。
+
+plan/tasks/implement细稿默认本地忽略，长期需求/决策/验收归原owner；[域模板]({{FILE:docs/guides/living-spec-template.md}})给出完整写法。[过程材料指南](docs/tasks/README.md)不是当前设计。配置和可选task状态仅作辅助；换机缺本地草稿要明确恢复，不假装未共享内容已经入Git。
+
+## 规则与验证
+
+- [流程约束]({{FILE:docs/rules/dev-workflow-rules.md}})
+
+- [文档治理]({{FILE:docs/rules/doc-ssot-rules.md}})
+- [提交约定]({{FILE:docs/rules/commit-rules.md}})
+- [设计完整性]({{FILE:docs/rules/design-completeness-rules.md}})
+- `node scripts/harness/check.mjs --profile fast`：仓库子集检查，不是任务完成。
+- `node scripts/harness/check.mjs --profile ci --task <ID> --intent complete`：按任务风险和验收判断验证是否充分，之后仍须converge/handover。
+- release需任务、逐项授权引用、回滚、真实L3命令及`ALLOW_REAL_E2E=1`；检查不会自动发布。
+<!--IF:dev-flow-skills-->
+
+## 共享技能
+
+- 开发任务：[dev-flow](docs/skills/dev-flow/SKILL.md)
+- 测试设计：[test-spec](docs/skills/test-spec/SKILL.md)
+- 方案/实现评审：[design-review](docs/skills/design-review/SKILL.md)
+<!--/IF:dev-flow-skills-->
+<!--IF:agent-conduct-->
+- [Agent行为]({{FILE:docs/rules/agent-conduct-rules.md}})
+<!--/IF:agent-conduct-->
+<!--IF:clean-code-->
+- [代码规范]({{FILE:docs/rules/clean-code-rules.md}})
+<!--/IF:clean-code-->
+<!--IF:three-tier-test-->
+- [测试规则]({{FILE:docs/rules/testing-rules.md}})
+<!--/IF:three-tier-test-->
+
+
+
+所有回应与项目文档使用中文。仓内规则服从用户当前指令和宿主指令层级。

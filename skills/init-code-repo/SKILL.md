@@ -1,216 +1,100 @@
 ---
 name: init-code-repo
-description: Scaffold a new code repo with SSOT doc structure + R&D process + quality gates. Use when creating a new project/repository, starting a fresh codebase, or initializing repo structure. Assembles templates with variable substitution and conditional component inclusion, then guides fill-in. Runtime-neutral — works in Claude Code, codex, opencode, kimicode, zcode.
+description: Use when initializing a new repository, retrofitting an existing codebase, planning adoption across multiple repositories, or upgrading installed engineering tooling while preserving project assets.
 ---
 
-# init-code-repo — 通用代码仓模板
+# 初始化、存量整改与升级代码仓
 
-在新仓初始化 SSOT 文档结构 + 研发流程 + 质量门禁，并引导逐步建仓。运行时中立，零外部依赖（agent 自己装配，不需要 Node.js/Python/任何运行时）。
+先查Git状态、用户目标、已有文件和授权。空白新仓走assemble；普通存量仓无receipt走adopt；已有模板receipt走upgrade。新仓、认领整改和工具升级是不同操作，不把“实现/升级”解释为允许覆盖手改、提交或发布。
 
-## 5 阶段向导流
+## 录取
 
-按顺序执行：**问 → 等用户答 → 写文件 → 校验 → 下一阶段**。
+收集projectName、oneLine、stacks、repoShape(single/monorepo)、repoRole(single/component/central-docs)、runtimes、remote、commitGate、components、naming(en/zh/custom)。可选preset为minimal/standard/product，展开为同一能力集；用户已有答案不重复询问。
 
-### 阶段 0 · 前置检查
+commitGate是对象：`{"mode":"default"}`、`{"mode":"none"}`或`{"mode":"custom","regex":"正则表达式"}`；省略时为default。runtimes/components/stacks均为数组，不以off等自由文本代替契约值。
 
-- 确认当前目录是空仓或仅含 `.git`/`README`/`LICENSE`。含冲突文件（已有 `AGENTS.md`/`CLAUDE.md` 等）→ 停下询问，不静默改。
-- 未 `git init` → 提示用户初始化，不替用户 init（除非用户同意）。
+支持栈、能力、预设及文件owner见[本地定义](contracts/definitions.json)。monorepo使用stackRoots明确每栈目录；Node前后端只有不同根才可组合，deployment-gates+编程栈仍拒绝。未知能力、重复输出、路径逃逸、symlink或未裁决同名工具冲突在写入前拒绝。
 
-### 阶段 1 · 录取
+宪法、系统设计骨架、长期域索引/完整模板、默认e2e和本地检查始终存在；产品、扩展方法入口、三层测试、PI、上游、文档视图、多仓和worktree按选择装配。minimal可简写内容但不能关闭设计权威；新项目先识别实际功能域，不强塞治理业务域。
 
-向用户收集（多选题优先）：
+## 新仓
 
-| 项 | 选项 | 用途 |
-|---|---|---|
-| 项目名 | 自由文本 | 填入 {{PROJECT_NAME}} |
-| 一句话定位 | 自由文本 | 填入 {{ONE_LINE}} |
-| 主栈 | 无 / rust / node-frontend / node-backend / python / go / java / 多栈 | 决定叠加哪些 stacks/；node 拆前端/后端子栈。**注意：node-frontend 与 node-backend 互斥**——两者同选时 package.json/tsconfig.json 会同名覆盖（writeTree 写根路径，后写覆盖先写，EL-004 同类残留；Makefile 已合并到 shared 不受影响）。前后端共存的 monorepo 需单独立 spec 设计 per-stack 命名空间。 |
-| 仓形态 | 单 app / monorepo | 决定布局 |
-| 仓角色 | 单仓 / 组件仓 / 中央 docs 仓 | 决定多仓模式：单仓=自包含；组件仓=带 component.yaml + 跨仓引用；中央 docs 仓=聚合脚本 + 跨仓视图 |
-| 目标 runtime | claude-code / codex / opencode / kimicode / zcode / 多端 | 决定叠加哪些 runtime-adapters/ |
-| 远端托管 | gitcode / github / gitlab / 无 | remote=none 时无 remote-hook；否则有 |
-| Commit 门禁档 | 默认正则 / 自定义正则 / 不要求 | 决定 commit-msg 段 |
-| 分支模型 | 默认(dev/main/fix/release/v) / 自定义 | agent-policy 激活时填入 {{DEV_BRANCH}}/{{MAIN_BRANCH}}/{{FIX_BRANCH}}/{{RELEASE_PREFIX}} |
-| Policy 标记 | 默认 `{{PROJECT_NAME}}-Agent-Policy: 1.0` / 自定义 | agent-policy 激活时填入 {{POLICY_ID}} |
-| PI 命名格式 | 默认 `YYYY-PI<N>` / 自定义 | pi-cadence 激活时填入 {{PI_FORMAT}} |
-| 上游来源 | 上游仓名 / 基线 commit / 许可证（默认 TODO 占位） | has-upstream 激活时填入 {{UPSTREAM_REPO}}/{{UPSTREAM_BASELINE}}/{{UPSTREAM_LICENSE}} |
-| 文档命名 | 英文 / 中文 / 自定义 | 决定文档文件名风格（工具契约文件 AGENTS.md/CLAUDE.md/README.md/lefthook.yml 等恒英文；docs/ 下文档与 ROADMAP/HANDOVER 等可中文/自定义）|
-| 可选组件 | 多选（见下表） | 决定装配范围与版本派生 |
+1. 检查目标目录与配置；列出将生成的文件。已有文件不覆盖；即使仅有README/LICENSE，遇到同名输出也需明确合并方案。
+2. 推荐使用已随技能提供的本地Node >=22参考入口（相对路径以本技能安装目录为准）：
 
-校验：必答项齐全；主栈与仓形态自洽。
+```bash
+node <本技能目录>/assemble.mjs --config <录取配置.json> --root <目标仓> --plan
+node <本技能目录>/assemble.mjs --config <录取配置.json> --root <目标仓>
+```
 
-选组件仓时追问中央 docs 仓 URL；选中央 docs 仓时追问初始组件仓列表（写入 registry.yaml）。
+3. 校验生成文件、命名路径、启用技能索引和公共入口：
 
-### 阶段 2 · 骨架写入
+```bash
+node scripts/harness/check.mjs --profile fast
+```
 
-按"手动装配规则"（见下）从 `templates/core/` 写入所有必带文件，按已选组件条件装配。
+4. 指向AGENTS、宪法、系统/域索引及默认e2e；报告文件范围、未填设计、验证结果/未运行、工作区和下一步，交给dev-conductor。初始化不自动开始开发、安装hook或提交。
 
-### 阶段 3 · 栈与门禁叠加
+Agent可离线读取模板装配，但必须遵循assemble.mjs/project.mjs的同一契约：变量替换→命名映射→条件剥离，先在内存求全量文件owner/冲突，再写入；从definitions的supersedes显式替换旧输入，不靠后写覆盖。JSON配置由project.mjs解析生成，不手写另一套推导。不能证明输出一致时使用参考入口；无Node时机器验证为blocked，不声称零运行时全绿。
 
-- 按 `config.stacks` 从 `templates/stacks/<栈>/` 写入胶水文件。
-- 从 `templates/gates/` 写入门禁文件（按 require 标记条件包含）。
-- 按目标 runtime 从 `templates/runtime-adapters/<runtime>/` 写入适配片段。
+## 普通存量仓：认领与整改
 
-### 阶段 4 · 留 TODO 骨架
+没有`.harness/assembly.json`且不是已知v1模板基线时，用随技能提供的adopt入口。inspect只给文件/Markdown候选，不自动判断哪份设计正确。将配置和计划放在目标仓外，避免生成计划本身使仓内来源快照过期：
 
-本 skill 只定骨架+规范，**不起草设计内容**（设计填充交给 dev-conductor→superpowers）。阶段 4 仅做：
+```bash
+node <本技能目录>/adopt.mjs inspect --root <目标仓>
+node <本技能目录>/adopt.mjs plan --root <目标仓> --config <仓外录取配置.json> --out <仓外整改计划.json>
+node <本技能目录>/adopt.mjs check --root <目标仓> --plan <仓外整改计划.json>
+node <本技能目录>/adopt.mjs apply --root <目标仓> --plan <已审阅整改计划.json>
+```
 
-1. 变量替换已由装配完成（{{PROJECT_NAME}} 等）。
-2. 各设计文档保留 `（TODO: ...）` 占位，标明"填什么"。
-3. `AGENTS.md` 仓库布局段：填所选栈形态的目录树占位（实际产物由 dev-conductor 落地后回刷）。
-4. `HANDOVER.md` 首条交接：本轮首做 + 当前阶段门标注（P0）。
+在原录取字段上增加明确职责映射，保持现有正文：
 
-校验：占位符 `{{...}}` 残留扫描（应无）；骨架文件齐全。
+```json
+{
+  "projectName": "ExistingApp",
+  "oneLine": "已有业务系统",
+  "stacks": ["python", "node-frontend"],
+  "repoShape": "monorepo",
+  "stackRoots": {"python": "services/api", "node-frontend": "web"},
+  "documents": {"systemDesign": "docs/architecture.md", "domainIndex": "docs/domains.md"},
+  "domains": [{"id": "orders", "path": "docs/design/orders.md", "description": "订单当前行为及边界"}]
+}
+```
 
-> 设计文档填充与代码落地不在此 skill 范围——由 dev-conductor 驱动 superpowers 完成。
+角色还包括constitution/domainModel/handover/workflow/e2e等；仅映射真实已有权威，不为了满足默认路径再复制一份设计。实际命令以checks的argv/cwd/inputs声明，补真实L2/L3；ci.bootstrap配置明确的工具/依赖准备argv。缺失的项目内容由plan.remediation列出；在原文中修正结构、验收和状态，不把骨架或安全接线成功当完整整改。
 
-### 阶段 5 · 验收
+checks命令的完整例子：`{"id":"orders.test","kind":"command","argv":["node","--test","tests/orders.test.mjs"],"cwd":"modules/orders","inputs":["src","tests"],"profiles":["fast","ci"],"required":true,"layer":"L1","timeoutSeconds":60,"effect":"local-validation"}`。effect只能是local-validation或real-e2e；后者属于另有实际授权的真实环境验证。timeoutSeconds须大于0；不要从工具名推断已安装或已运行。
 
-- SSOT 一致性：`AGENTS.md` 索引的文件全部存在；三类文档分类在 `doc-governance.md` 已写明；死链扫描（所有 markdown 链接指向实际存在文件）。
-- 打印完成清单：已写文件树、未填占位列表、下一步建议。
-- 不自动 commit/push（除非用户显式要求）。
+adopt保留README、包/构建配置、已有CI、源码和设计正文；AGENTS/CLAUDE/域索引/ignore仅有界追加入口。未知工具碰撞保持conflict，来源变化后重新plan。用户已授权当前整改范围且check无冲突时继续apply，不重复请批；未明确的历史删除、职责重划或语义冲突先给具体处置方案。
 
-**设计完整性门控**：读 HANDOVER.md 顶部"当前阶段门" → 按 [design-completeness-rules.md](docs/rules/design-completeness-rules.md) 的阶段门→必填文档映射 → 扫描必填文档的 `（TODO: ...）` 残留与空节 → 列未填项。有残留=阻断发布门控（除非用户显式跳过并记入 HANDOVER 待办）。
+多仓使用`node <本技能目录>/adopt.mjs batch-plan --roots <仓外清单.json> --out <仓外批量计划.json>`；清单为`[{"root":"/绝对仓路径","config":{...}}]`，config也可指向录取JSON文件。只处理明确列出的仓，批量动作只生成计划，分别核对并应用每仓方案，不扫描并重写相邻项目。
 
-**末尾引导 dev-conductor**：骨架+规范就位后，引导用户调用 `dev-conductor` skill——它按完整性门控逐项驱动 superpowers（brainstorming 填设计文档、writing-plans/executing-plans/TDD 落地代码）。本 skill 只定骨架+规范，设计→落地交 dev-conductor→superpowers。
+## 已有模板仓升级：plan/check/apply
 
+禁止对已有仓调用新仓写入路径。先提供录取配置；v2用.harness/assembly.json中的原始hash识别人改，v1必须用户提供准确旧配置作为基线，不根据当前文件猜测。
 
----
+```bash
+node <本技能目录>/upgrade.mjs plan --root <目标仓> --config <新配置.json> --out <方案.json>
+# v1额外提供 --from-config <旧配置.json>
+node <本技能目录>/upgrade.mjs check --root <目标仓> --plan <方案.json>
+node <本技能目录>/upgrade.mjs apply --root <目标仓> --plan <已审阅方案.json>
+```
 
-## 手动装配规则（agent 离线装配，输出须与 assemble.mjs 一致）
+plan给出每文件add/update/unchanged/retain/conflict、基线/当前/目标hash和内容。receipt区分project-owned正文/实际配置与template-owned工具；前者保留用户维护内容，后者手改拒绝覆盖。升级继承当前职责映射，不能通过新默认配置生成第二套权威。用户已经授权具体升级范围且无冲突时继续apply，不重复请批。未知归属、计划后变化、symlink或指纹不符均拒绝；apply暂存/备份并保留逆向清单，不自动删除退役文件或改Git。
 
-agent 读 `templates/` 下的 `.tmpl` 文件，按以下规则处理后写入目标仓（`.tmpl` 后缀去掉）。
+## 临时资产与实际工程入口
 
-### 1. 变量替换
+默认装配assets-cli、maintenance和ci入口及资产保留策略。通过`node scripts/harness/assets-cli.mjs workspace --work <变化标识> --kind work --producer agent`取得受管临时输出目录；实际报告自动登记。结束前长期结论回原owner、必要证据导出核验、明确处置后关闭。保留规则启用后run-due在该范围内自动执行，无需逐次确认；未知历史不清理。详见生成仓的docs/guides/asset-lifecycle.md（按实际命名映射定位）。
 
-替换 `{{VAR}}` 为 ctx 值：
+`maintenance.mjs render --platform systemd|launchd|windows`只生成调度配置，实际安装/运行分别报告。`ci.mjs render --provider github|gitlab`生成真实workflow，已有pipeline不同则显式接同一prepare/check命令。其他平台使用通用入口，不能声称已有专用适配。新仓和存量仓都应验证真实cwd、工具/依赖和命令，而不只查文件存在。
 
-| 占位符 | ctx 字段 | 来源 |
-|--------|---------|------|
-| `{{PROJECT_NAME}}` | projectName | 阶段 1 项目名 |
-| `{{ONE_LINE}}` | oneLine | 阶段 1 一句话定位 |
-| `{{YEAR}}` | year | 当前年份（4 位） |
-| `{{COMMIT_REGEX}}` | commitRegex | commit 档为 custom 时的用户正则；否则不出现 |
-| `{{DEV_BRANCH}}` | devBranch | 阶段1录取（分支模型，默认 dev） |
-| `{{MAIN_BRANCH}}` | mainBranch | 阶段1录取（默认 main） |
-| `{{FIX_BRANCH}}` | fixBranch | 阶段1录取（默认 fix） |
-| `{{RELEASE_PREFIX}}` | releasePrefix | 阶段1录取（默认 release/v） |
-| `{{POLICY_ID}}` | policyId | 阶段1录取（默认 {{PROJECT_NAME}}-Agent-Policy: 1.0） |
-| `{{PI_FORMAT}}` | piFormat | 阶段1录取（默认 YYYY-PI<N>） |
-| `{{PI_FIRST}}` | piFirst | 派生（PI_FORMAT 的 YYYY→YEAR、<N>→1） |
-| `{{VERIFY_FAST_CMD}}` | verifyFastCmd | 派生（node-frontend 或 node-backend 单栈→npm run verify:fast，否则 make verify-fast） |
-| `{{UPSTREAM_REPO}}` | upstreamRepo | 阶段1录取（上游仓名，默认 TODO 占位） |
-| `{{UPSTREAM_BASELINE}}` | upstreamBaseline | 阶段1录取（上游基线 commit，默认 TODO） |
-| `{{UPSTREAM_LICENSE}}` | upstreamLicense | 阶段1录取（上游许可证，默认 TODO） |
+## 完成边界
 
-未知占位符保持不变。
+fast只说明本次子集检查。设计占位/空节、域结构与过程稿边界由最小检查处理；真正完成还须对照所属长期spec、系统不变量、真实验收和语义审查，converge更新原owner并HANDOVER。可选本地task助手的`--task ID --intent complete`必须有真实域来源及收敛记录，不能以政策/阶段note放行；它不是所有开发的强制平台。Spec Kit规范链+superpowers方法链在默认e2e明确调用与同一落点；已安装时实际使用，缺失按同等步骤执行并如实报告，不能把文案中的命令当已验证集成。
 
-### 1.5 文件名映射（命名风格）
+所有回应中文。工具许可、状态字段和“验收通过”都不授予提交、推送、发布或清场权限。
 
-按 `naming`（en/zh/custom）映射文档文件名。工具契约文件（AGENTS.md/CLAUDE.md/README.md/lefthook.yml/package.json/Makefile 等）恒不映射。
+## 填实参考
 
-- 模板内 markdown 链接 `{{FILE:path}}`：按映射替换为目标文件名，并相对当前文件目录相对化（用于链接）。
-- 模板内绝对路径 `{{FPATH:path}}`：按映射替换，不相对化（用于脚本 MAPPING 与 inline code 路径）。
-- 输出文件名：模板文件名按映射重命名（如 `dev-workflow-rules.md` → `研发流程规则.md`）。
-
-zh 映射表见 `naming.mjs`。custom = 用户提供 namingCustom（英文路径 → 自定义文件名）覆盖 zh/en 基线。
-
-### 2. 条件块剥离（`<!--IF:cond-->`）
-
-模板内的条件块按 cond 是否在"激活集"中保留或剥离：
-
-- `<!--IF:cond-->...<!--/IF:cond-->`：cond 激活 → 保留内容；否则整段移除。
-- `<!--IF:cond-->A<!--ELSE-->B<!--/IF:cond-->`：cond 激活 → 保留 A；否则保留 B。
-- 嵌套：外层保留后，内层标记继续按规则处理（循环至稳定）。
-- 标记尾换行：剥离标记时连同其尾随换行一并消费，避免留空行；保留内容中的段落空行不动。
-
-### 3. 文件级条件包含（`<!--require:cond-->`）
-
-文件首行若是 `<!--require:cond-->`，则仅当 cond 激活时才写该文件；写入前剥去该首行。无此标记的文件（核心必带）总是写入。
-
-### 4. 激活集推导
-
-激活集 = 选中组件 + 派生态 + commit 档 + 选中栈。
-
-**组件直传**（在 components 列表中即激活）：`product-docs`、`docker`、`three-tier-test`、`clean-code`、`agent-conduct`、`full-ledger`、`doc-sync`、`remote-hook`、`api-docs`、`docs-site`、`design-views`、`multi-repo-component`、`central-docs`、`agent-policy`、`dev-flow-skills`、`pi-cadence`、`has-upstream`、`error-log`、`worktree-tooling`、`deployment-gates`。
-
-> 注：`multi-repo-component`/`central-docs` 由 repoRole 派生（非 components 列表），但作为 cond 名会经 activeConds 透传，故一并列出。
-
-**派生态**：
-- `full-workflow` = components 含 `docker` 或 `three-tier-test`。
-- `remote-hook` = components 含 `remote-hook` 或 `remote !== 'none'`。
-- `agent-policy` = components 含 `dev-flow-skills`（流程层依赖执行层）。
-
-**commit 档**（按 commitGate.mode）：
-- `default` → `commit-default`
-- `custom` → `commit-custom`
-- `none` → `commit-none`
-
-**栈**（按 stacks 列表）：`rust` / `node-frontend` / `node-backend` / `python` / `go` / `java`。
-
-**node 派生态**：`node` = stacks 含 `node-frontend` 或 `node-backend`（lefthook 的 `<!--IF:node-->` 块由派生 cond 触发，模板条件块名不改）。
-
-### 5. 写入路径
-
-- `templates/core/**` → 目标仓根（保留相对路径）。
-- `templates/stacks/<栈>/**` → 目标仓根（每个选中栈；仅 per-stack 胶水文件如 pom.xml/go.mod/package.json/tsconfig.json，不含 Makefile）。
-- `templates/shared/**` → 目标仓根（仅当 stacks 非空时写入；含跨栈共享 Makefile，按激活栈条件分段合并，避免多栈同名覆盖 EL-004）。
-- `templates/gates/**` → 目标仓根（按 require 标记条件包含）。
-- `templates/runtime-adapters/<runtime>/**` → 目标仓根（每个选中 runtime）。
-- `.tmpl` 后缀去掉。
-
-### 6. 版本派生
-
-- `dev-workflow-rules.md`：选了 docker 或 three-tier-test → 8 步全版（L2/L3 激活）；否则精简（L2/L3 跳过，步骤 5-6 = 记录/发布门控）。模板内已用 `<!--IF:full-workflow-->` 处理。
-- `test-spec/`：选了 three-tier-test → 完整三层格式；否则骨架。
-- `testing-rules.md`：选了 three-tier-test 才存在（require 标记）。
-- `AGENTS.md`：按已选组件条件装配（六层模型段在 product-docs 激活时出现；api 索引行在 api-docs 激活时出现）。
-
----
-
-## 组件清单
-
-### 核心必带（不问）
-
-AGENTS.md、CLAUDE.md、README.md、.gitignore、lefthook.yml、ROADMAP.md、HANDOVER.md、docs/rules/{commit-rules,dev-workflow-rules,doc-ssot-rules}.md、docs/02-design/{test-spec/README,doc-governance}.md、docs/ledger/{bugs,archive/}、docs/superpowers/specs/、gitleaks（lefthook 内）。
-
-### 可选组件（多选）
-
-| 组件 | cond | 新增 | 副作用 |
-|------|------|------|--------|
-| 产品级设计文档组 | product-docs | 00-charter/、01-product/、02-design/system-architecture.md | AGENTS 加六层模型段 |
-| Docker 构建基础设施 | docker | infra/docker/（Dockerfile + docker-compose.yml + .env.example） | dev-workflow L2 激活 |
-| 三层测试规则 | three-tier-test | rules/testing-rules.md | test-spec 升级完整 + dev-workflow L3 激活 |
-| Clean Code 严格门禁 | clean-code | rules/clean-code-rules.md | 栈 lint 强制 -D warnings |
-| Agent 行为军规 | agent-conduct | rules/agent-conduct-rules.md | AGENTS 索引加军规行 |
-| 完整台账 | full-ledger | ledger/{debt,version-log}.md | doc-ssot-rules 台账表加行 |
-| 代码-文档同步检查 | doc-sync | （lefthook pre-push 片段，已内联） | lefthook pre-push 加 doc-sync |
-| 远端 pre-receive hook | remote-hook | gates/pre-receive-remote/ | commit-rules 标注远端强控 |
-| API 文档 | api-docs | 02-design/api/api-reference.md | AGENTS 索引加 api 行 |
-| 文档站点（HTML 生成站） | docs-site | docs/.vitepress/config.ts | 维护者侧 npx vitepress build 生成 HTML 站，markdown 为源 |
-| 设计视觉资产（手写 HTML） | design-views | docs/02-design/views/ | HTML 非 SSOT，冲突以 markdown 为准 |
-| Agent 策略与执行门禁 | agent-policy | dev-workflow-rules 治理段 + agent-governance 4 文档 + check-agent-policy.mjs + settings.json 重写 + 各 stack verify 目标 + AGENTS Policy 段 + lefthook verify-fast | 自动被 dev-flow-skills 激活 |
-| 研发流程 skill 三层 | dev-flow-skills | docs/skills/{dev-flow,test-spec,design-review}/SKILL.md + .claude/skills/ 薄入口 + check-test-spec-consistency.mjs + install-skills.sh(central-docs 附加) | 自动激活 agent-policy |
-| 研发迭代(PI)体系 | pi-cadence | ROADMAP/AGENTS/HANDOVER 的 PI 段 | 独立 |
-| 上游 vendoring 治理 | has-upstream | UPSTREAM-SYNC.md + NOTICE | overlay-only 约定 + 回归 diff |
-| 错误记忆台账 | error-log | ERROR_LOG.md | 跨会话过程错误台账 |
-| worktree 生命周期 | worktree-tooling | scripts/{new,cleanup}-worktree.sh + AGENTS.config.json + .local.example | .gitignore 加 local config |
-| 部署门禁 | deployment-gates | Makefile（deployment 专属 verify 目标） | 用于纯部署仓（stacks:[]，无编程栈） |
-
-### Commit 门禁三档
-
-- 默认正则：`^(feat|fix|docs|style|refactor|perf|test|chore)\([^)]+\): .+\s#\d+$`
-- 自定义正则：用户提供。
-- 不要求：仅建议，非强制。
-
----
-
-## 阶段 5 死链校验（agent 执行）
-
-扫描所有生成的 `.md` 文件中的 markdown 链接 `[text](relative-path)`，验证目标文件存在。忽略外部链接（http/https/mailto）和锚点链接（#...）。死链 = 阻断，修模板（加 require 守卫或移除链接）至无死链。
-
----
-
-## 回应语言
-
-所有回应、设计文档、规划文档一律使用中文。
+随技能分发的[两域样本](examples/README.md)提供系统设计、共享模型、两份长期spec和可运行纯Node行为，不自动写入用户项目；它与维护仓连续演进验收共用同一份正文。

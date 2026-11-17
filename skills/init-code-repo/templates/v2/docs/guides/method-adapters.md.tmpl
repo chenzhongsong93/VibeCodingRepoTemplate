@@ -1,0 +1,30 @@
+# 方法适配、实际调用与证据
+
+本项目e2e正文为执行入口。源AWB定义了Spec Kit+superpowers调用关系，但Spec Kit命令实现没有随源仓vendoring；本模板也不把这些外部skill实现假装已打包。
+
+## 能力核对
+
+开工只检查当前runtime实际暴露的skill/命令及其本地文档，记录名称/版本/路径/能力；不自动联网安装、登录或引入平台/扫描服务。调用以实际能力为准，不发明CLI参数或把斜杠命令当shell二进制。
+
+有superpowers时使用其对应方法；有Spec Kit时由其规范动作组织阶段。二者已可用时不跳过规定的方法工作。缺一时按下表等价执行并报告未调用，不能省掉产物/审查后直接推进。
+
+| 动作 | 主职责与调用 | 同一份产物 | 不可用时的同等步骤 |
+|---|---|---|---|
+| specify/clarify | Spec Kit规范化；superpowers:brainstorming澄清/方案探索 | 所属域spec修订及本地未批准提议 | 读现有域/调用方，写FR/GWT/SC、非目标和待裁决，批准后回原spec并标实现状态 |
+| plan | Spec Kit技术组织；superpowers:writing-plans完善执行计划 | 所属域plan/plan.md | 做选项/依赖/兼容/风险/步骤/内联验证，长期结构取舍进原域设计 |
+| tasks与TEST-DESIGN | Spec Kit依赖任务；test-spec方法 | 所属域tasks/tasks.md与长期回归资产 | 六步测试设计、覆盖矩阵、需求和测试双重对照 |
+| analyze | Spec Kit一致性检查，独立审阅可用则调用 | 本地缺口/冲突及处置，不另造长期设计 | 逐项对照系统约束、FR/SC、域方案、任务和测试；明确自审范围 |
+| implement | 规范链进入实施；superpowers执行/TDD/debug/review | 代码、测试、内联验证证据 | 先失败复现，按批准方案最小实现，根因调试与内容评审 |
+| verify | superpowers:verification-before-completion与本地命令 | 实际输出及范围/未运行 | 新鲜运行、逐项读输出、区分结构/行为/环境/语义 |
+| converge | Spec Kit原生评估实现并追加剩余任务；本仓随后裁决与回刷 | 原生tasks及原系统/域/事实/测试/台账和短交接 | 对SC/不变量判偏差、裁决、回刷、遗留去向；原生命令不会自动改写spec/plan |
+
+## 落点适配的真实验收
+
+1. 先读取已安装版本实际说明，确定能否复用已有域/分支和显式产物路径。
+2. 将所属域、批准目标、唯一spec、plan/tasks路径及不提交/不新增冻结设计约束传入工具上下文；两套方法共用这些文件。
+3. 在独立临时样本验证第二次调用不会新建另一份spec、不会写docs/superpowers或擅自commit，记录实际结果。
+4. 工具不支持可控复用时，不虚构-AllowExistingBranch等参数；标明该集成路径未验证/不支持，执行表中仓内等价步骤。不以无法安装外部工具削弱规范链。
+
+模板验证应分别记录“方法契约可读/替代路径运行”和“真实外部工具调用”；只有后者真实发生才可宣称已安装版本集成成功。
+
+已核对上游版本支持Living Spec等多种保留策略，不能把feature规格概括为一次性。当前项目按既定长期域设计维护；上游直属plan/tasks与本仓过程落点可能不同，须核对真实preset/command/script组合。仅设置feature目录或辅助脚本成功不证明Agent命令保留已有正文；不支持时使用明确等价步骤。

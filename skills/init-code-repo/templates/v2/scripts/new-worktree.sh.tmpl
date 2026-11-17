@@ -1,0 +1,4 @@
+<!--require:worktree-tooling-->
+#!/bin/sh
+# 默认只读预览；真正创建显式调用node scripts/harness/worktree.mjs create。
+exec node scripts/harness/worktree.mjs preview-create --branch "$1"

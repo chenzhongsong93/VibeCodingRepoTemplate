@@ -1,0 +1,14 @@
+<!--require:multi-repo-component-->
+# 本组件的自描述清单；中央仓只读取显式准备的本地快照，不自动拉取。
+name: {{PROJECT_NAME}}
+type: self
+one-line: {{ONE_LINE}}
+repo: ""
+layer: ""
+depends-on: []
+exposes: []
+consumes: []
+single-repo-docs:
+  architecture: {{FPATH:docs/00-system/system-design.md}}
+  model: {{FPATH:docs/00-system/domain-model.md}}
+  domains: specs/README.md

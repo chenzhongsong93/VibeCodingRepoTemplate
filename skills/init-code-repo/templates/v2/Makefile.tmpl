@@ -1,0 +1,18 @@
+# 单一owner：所有包装调用同一个本地入口，不安装工具。
+.PHONY: verify-fast verify-ci verify-release policy-check lint test build
+verify-fast:
+	node scripts/harness/check.mjs --profile fast
+verify-ci:
+	node scripts/harness/check.mjs --profile ci
+verify-release:
+	node scripts/harness/check.mjs --profile release $(if $(TASK),--task $(TASK))
+policy-check:
+	node scripts/harness/check.mjs --only core.config,core.policy,core.references,core.hygiene,core.tasks
+lint:
+	node scripts/harness/check.mjs --group lint
+test:
+	node scripts/harness/check.mjs --group test
+build:
+	node scripts/harness/check.mjs --profile ci --group build
+verify-k8s:
+	node scripts/harness/check.mjs --group deployment

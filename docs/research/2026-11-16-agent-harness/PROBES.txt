@@ -1,0 +1,14 @@
+2026-11-16 offline probes; no dependency installation, network, Git mutation, application tests or hooks.
+Temporary fixtures retained at /tmp/harness-audit-Qrgk5C
+{"id":"P01","scenarioCount":21,"scenarios":["agent-policy","central-docs","component","deployment-gates","dev-flow-skills","error-log","full-followups","full-governance","full-product","full-workflow","has-upstream","html-views","java-stack","lightweight","multi-stack","node-backend","pi-cadence","standard","with-conduct","worktree-tooling","zh-naming"],"rootAgents":false,"rootClaude":false,"rootCompletenessScript":false}
+{"id":"P02","exit":1,"stdout":"","stderr":"✗ completeness FAIL (stage P0):\n  docs/00-charter/concept.md: missing\n  docs/00-charter/guardrails.md: missing\n  docs/00-charter/vision-strategy.md: missing\n  docs/02-design/north-star.md: missing\n  docs/ROADMAP.md: todo （TODO: 标注当前所处阶段门，与 HANDOVER.md 一致）\n  docs/ROADMAP.md: todo （TODO: 填写 P0 目标与验收标准）"}
+{"id":"P03","exit":0,"stdout":"✓ completeness OK (stage garbage, 0 docs checked)","stderr":""}
+{"id":"P04","exit":0,"stdout":"✓ completeness OK (stage P0, 5 docs checked)","stderr":""}
+{"id":"P05","makefile":false,"hookCallsMake":true}
+{"id":"P06","verifyFast":false,"verifyK8s":false,"verifyRelease":false}
+{"id":"P07","hasCanonicalSkill":true,"entryHasSkillPointer":false}
+{"id":"P08","exit":0,"stdout":"✓ 1:1 零差异","stderr":""}
+{"id":"P09","exit":1,"stdout":"","stderr":"❌ 不一致，构建阻断\n--- SSOT ---\nL1-JAVA-01\n--- 代码 ---"}
+{"id":"P10","exit":0,"stdout":"✓ 1:1 零差异","stderr":""}
+{"id":"P11","exit":1,"stdout":"✓ CLAUDE.md is single line @AGENTS.md\n✓ AGENTS.md contains AuditDemo-Agent-Policy: 1.0\n✓ .claude/settings.json absent (non-claude-code runtime; permission model N/A)\n✓ agent-governance/policy.md exists\n✓ agent-governance/risk-levels.md exists\n✓ agent-governance/compatibility-matrix.md exists\n✓ agent-governance/validation-cases.md exists","stderr":"✗ dev-workflow-rules has T0-T3 table"}
+{"id":"P12","assembled":true,"scripts":{"lint":"eslint . && prettier --check .","lint:fix":"eslint . --fix && prettier --write .","test":"vitest run","build":"tsc","start":"tsx src/index.ts"}}

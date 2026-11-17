@@ -1,0 +1,103 @@
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { substitute } from './substitute.mjs';
+import { activeConds, stripConditionals } from './conditional.mjs';
+import { buildMap, mapPath, substituteFiles, substituteFilePaths, substituteFileNames } from './naming.mjs';
+
+const REQUIRE_RE = /^<!--require:([\w-]+)-->\n?/;
+
+function walk(srcDir, out = []) {
+  for (const entry of readdirSync(srcDir, { withFileTypes: true })) {
+    const full = join(srcDir, entry.name);
+    if (entry.isDirectory()) walk(full, out);
+    else out.push(full);
+  }
+  return out;
+}
+
+function extraConds(config) {
+  const conds = [];
+  const mode = config.commitGate?.mode || 'default';
+  if (mode === 'default') conds.push('commit-default');
+  else if (mode === 'custom') conds.push('commit-custom');
+  else if (mode === 'none') conds.push('commit-none');
+  const stacks = config.stacks || [];
+  for (const s of stacks) conds.push(s);
+  // node 派生态:node-frontend / node-backend 共享 lefthook 的 <!--IF:node--> 块
+  if (stacks.includes('node-frontend') || stacks.includes('node-backend')) conds.push('node');
+  for (const r of config.runtimes || []) conds.push(r);
+  if (config.repoRole === 'component') conds.push('multi-repo-component');
+  if (config.repoRole === 'central-docs') conds.push('central-docs');
+  return conds;
+}
+
+function writeTree(srcDir, targetDir, ctx, activeSet, map) {
+  if (!existsSync(srcDir)) return;
+  for (const abs of walk(srcDir)) {
+    const rel = abs.slice(srcDir.length + 1).replace(/\\/g, '/');
+    let content = readFileSync(abs, 'utf8');
+    const req = content.match(REQUIRE_RE);
+    if (req) {
+      if (!activeSet.has(req[1])) continue;
+      content = content.slice(req[0].length);
+    }
+    content = substitute(content, ctx);
+    content = substituteFilePaths(content, map);
+    content = substituteFileNames(content, map);
+    const outRel = rel.replace(/\.tmpl$/, '');
+    const currentDir = outRel.includes('/') ? outRel.slice(0, outRel.lastIndexOf('/')) : '';
+    content = substituteFiles(content, map, currentDir);
+    content = stripConditionals(content, [...activeSet]);
+    const outRelMapped = mapPath(outRel, map);
+    const outPath = join(targetDir, outRelMapped);
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, content);
+  }
+}
+
+export function assembleV1(targetDir, config) {
+  const bm = config.branchModel || {};
+  const devBranch = bm.dev || 'dev';
+  const mainBranch = bm.main || 'main';
+  const fixBranch = bm.fix || 'fix';
+  const releasePrefix = bm.release || 'release/v';
+  const policyId = config.policyId || `${config.projectName}-Agent-Policy: 1.0`;
+  const piFormat = config.piFormat || 'YYYY-PI<N>';
+  const piFirst = piFormat.replace('YYYY', String(config.year)).replace('<N>', '1');
+  const stacks = config.stacks || [];
+  const isNodeOnly = stacks.length === 1
+    && (stacks[0] === 'node-frontend' || stacks[0] === 'node-backend');
+  const verifyFastCmd = isNodeOnly ? 'npm run verify:fast' : 'make verify-fast';
+  const up = config.upstream || {};
+  const upstreamRepo = up.repo || '（TODO: 填上游仓名）';
+  const upstreamBaseline = up.baseline || '（TODO: 填上游基线 commit）';
+  const upstreamLicense = up.license || '（TODO: 填上游许可证，如 Apache-2.0）';
+  const ctx = {
+    projectName: config.projectName,
+    oneLine: config.oneLine,
+    year: String(config.year),
+    commitRegex: config.commitGate?.regex || '',
+    devBranch, mainBranch, fixBranch, releasePrefix,
+    policyId, piFormat, piFirst, verifyFastCmd,
+    upstreamRepo, upstreamBaseline, upstreamLicense,
+  };
+  const conds = [...activeConds(config), ...extraConds(config)];
+  const activeSet = new Set(conds);
+  const map = buildMap(config.naming, config.namingCustom || {});
+  const root = 'skills/init-code-repo/templates';
+  writeTree(join(root, 'core'), targetDir, ctx, activeSet, map);
+  for (const stack of config.stacks || []) {
+    writeTree(join(root, 'stacks', stack), targetDir, ctx, activeSet, map);
+  }
+  // 多栈 Makefile 共享模板：单实例写入，避免 per-stack Makefile 同名覆盖（EL-004）
+  if ((config.stacks || []).length > 0) {
+    writeTree(join(root, 'shared'), targetDir, ctx, activeSet, map);
+  }
+  writeTree(join(root, 'gates'), targetDir, ctx, activeSet, map);
+  if (config.repoRole === 'central-docs') {
+    writeTree(join(root, 'central-docs'), targetDir, ctx, activeSet, map);
+  }
+  for (const runtime of config.runtimes || []) {
+    writeTree(join(root, 'runtime-adapters', runtime), targetDir, ctx, activeSet, map);
+  }
+}
